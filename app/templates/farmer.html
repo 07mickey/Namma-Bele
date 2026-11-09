@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Portal — NAMMA BELE{% endblock %}
+
+{% block content %}
+<!-- Farmer Hero Card (AgriTech Styling) -->
+<div class="card admin-hero" style="margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div class="portal-brand-header">
+      <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+      <div>
+        <span class="admin-badge-user" style="margin-bottom: 0.35rem; display: inline-flex;">🌾 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Registered Farmer Dashboard</span>
+        <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;">Farmer Portal</h1>
+        <p style="opacity: 0.9; margin: 0;">Welcome, <strong id="farmer-welcome-name">Farmer</strong>! Request soil sample collection visits and access certified lab reports.</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="/soil-guide" class="btn btn-secondary btn-sm" style="background: rgba(255, 255, 255, 0.2); color: white; border-color: rgba(255,255,255,0.4);">📖 Soil Health Guide</a>
+      <a href="#booking-section" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">+ Book New Soil Test</a>
+    </div>
+  </div>
+</div>
+
+<!-- Agricultural Platform Navigation Ribbon -->
+<div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1.5rem; background: var(--color-bg-light); border: 1px solid var(--color-border);">
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; justify-content: center;">
+    <a href="/farmer#booking-section" class="btn btn-secondary btn-sm" style="background: white;">📅 Book Soil Test</a>
+    <a href="/farmer/tracking" class="btn btn-secondary btn-sm" style="background: white;">🛰️ Live Sample Tracking</a>
+    <a href="/farmer/plots" class="btn btn-secondary btn-sm" style="background: white;">🗺️ Farm Plots</a>
+    <a href="/farmer/crop-history" class="btn btn-secondary btn-sm" style="background: white;">🌾 Crop History</a>
+    <a href="/farmer/farm-records" class="btn btn-secondary btn-sm" style="background: white;">📊 Harvest &amp; Sales</a>
+    <a href="/farmer/addresses" class="btn btn-secondary btn-sm" style="background: white;">📬 Postal Addresses</a>
+    <a href="/farmer/expert-help" class="btn btn-primary btn-sm" style="background: var(--color-primary-green);">🧑‍🌾 Ask an Agricultural Expert</a>
+  </div>
+</div>
+
+<!-- Dashboard Metric Cards -->
+<section class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-title">Total Bookings</span>
+    <span class="stat-value" id="stat-total">0</span>
+  </div>
+  <div class="stat-card stat-pending">
+    <span class="stat-title">Pending</span>
+    <span class="stat-value" id="stat-pending">0</span>
+  </div>
+  <div class="stat-card stat-approved">
+    <span class="stat-title">Approved</span>
+    <span class="stat-value" id="stat-approved">0</span>
+  </div>
+  <div class="stat-card stat-rejected">
+    <span class="stat-title">Rejected</span>
+    <span class="stat-value" id="stat-rejected">0</span>
+  </div>
+  <div class="stat-card stat-completed">
+    <span class="stat-title">Completed</span>
+    <span class="stat-value" id="stat-completed">0</span>
+  </div>
+  <div class="stat-card" style="border-left: 4px solid var(--primary);">
+    <span class="stat-title">Reports Available</span>
+    <span class="stat-value" id="stat-reports" style="color: var(--primary);">0</span>
+  </div>
+</section>
+
+<!-- Active Appointment Status Card (M2 Integration) -->
+<div id="latest-status" class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(246, 250, 247, 0.9) 100%);">
+  <div class="status-card-header">
+    <div style="font-size: 1.15rem; font-weight: 700; color: var(--color-text-main); display: flex; align-items: center; gap: 0.5rem;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      Latest Soil Testing Request
+    </div>
+    <div id="status-badge-container">
+      <span class="badge badge-pending">Loading Status...</span>
+    </div>
+  </div>
+  
+  <div id="status-card-content">
+    <p style="color: var(--slate-600); font-size: 0.92rem; margin: 0;">Checking your recent appointment records...</p>
+  </div>
+</div>
+
+<!-- Farmer Portal Services (M2 Quick Action Cards) -->
+<div style="margin-bottom: 2rem;">
+  <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--color-text-main); letter-spacing: -0.015em;">
+    Farmer Portal Services
+  </h2>
+  <div class="dashboard-grid">
+    <!-- Card 1: Book Soil Test -->
+    <a href="#booking-section" class="glass-card action-card glass-card-hover">
+      <div>
+        <div class="action-icon action-icon-green">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </div>
+        <h3 class="action-title">Book Soil Test</h3>
+        <p class="action-desc">
+          Request an appointment for your field. Choose your preferred date, village location, and soil testing requirements.
+        </p>
+      </div>
+      <span class="btn btn-primary" style="align-self: flex-start;">Request Appointment &rarr;</span>
+    </a>
+
+    <!-- Card 2: Live Sample Tracking -->
+    <a href="/farmer/tracking" class="glass-card action-card glass-card-hover glass-card-earth">
+      <div>
+        <div class="action-icon action-icon-brown">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </div>
+        <h3 class="action-title">Live Sample Tracking</h3>
+        <p class="action-desc">
+          Track your soil samples in real-time across the 13-stage agricultural chain from field sampling to laboratory testing.
+        </p>
+      </div>
+      <span class="btn btn-secondary" style="align-self: flex-start;">Track Samples &rarr;</span>
+    </a>
+
+    <!-- Card 3: Appointments & Reports -->
+    <a href="#appointments-table-container" class="glass-card action-card glass-card-hover">
+      <div>
+        <div class="action-icon action-icon-green">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+        </div>
+        <h3 class="action-title">Appointments &amp; Reports</h3>
+        <p class="action-desc">
+          Securely access verified laboratory PDF soil health test reports and inspect appointment history.
+        </p>
+      </div>
+      <span class="btn btn-outline" style="align-self: flex-start; border: 1.5px solid var(--color-primary-green); color: var(--color-primary-green);">View Appointments &rarr;</span>
+    </a>
+  </div>
+</div>
+
+<!-- Multi-Step Soil Testing Booking Experience -->
+<section id="booking-section" class="card">
+  <div class="card-header" style="margin-bottom: 1.25rem;">
+    <div>
+      <h2 class="card-title">Book a Soil Sample Collection Appointment</h2>
+      <p class="text-muted" style="font-size: 0.88rem; margin-top: 0.25rem;">Request an official field visit by our certified agricultural extension technicians.</p>
+    </div>
+  </div>
+
+  <!-- Stepper Indicator (21st.dev inspired progress wizard) -->
+  <div class="booking-stepper" aria-label="Booking Process Steps">
+    <div class="step-node active" id="step-node-1">
+      <div class="step-circle" id="step-circle-1" aria-current="step">1</div>
+      <span class="step-label">Plot Details</span>
+    </div>
+    <div class="step-line" id="step-line-1"></div>
+    <div class="step-node" id="step-node-2">
+      <div class="step-circle" id="step-circle-2">2</div>
+      <span class="step-label">Time Slot</span>
+    </div>
+    <div class="step-line" id="step-line-2"></div>
+    <div class="step-node" id="step-node-3">
+      <div class="step-circle" id="step-circle-3">3</div>
+      <span class="step-label">Review & Confirm</span>
+    </div>
+  </div>
+
+  <form id="appointment-form" novalidate>
+    <!-- STEP 1: Appointment Details -->
+    <div class="wizard-step active" id="booking-step-1">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; color: var(--slate-900);">
+        Step 1: Land Details & Testing Date
+      </h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="land_details" class="form-label">Land / Field Details <span class="required">*</span></label>
+          <input type="text" id="land_details" name="land_details" class="form-control" placeholder="e.g. 3.5 acres paddy field, red loamy soil, Kharif crop" required maxlength="500">
+          <div class="form-text">Specify plot size, soil type, and current or intended crops.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="address" class="form-label">Field Location / Address <span class="required">*</span></label>
+          <input type="text" id="address" name="address" class="form-control" placeholder="e.g. Survey No. 42, North Field, Someshwar Village" required maxlength="500">
+          <div class="form-text">Provide exact physical farm location for sample pickup.</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="preferred_date" class="form-label">Preferred Date <span class="required">*</span></label>
+          <input type="date" id="preferred_date" name="preferred_date" class="form-control" required>
+          <div class="form-text">Must be today or a future date (Asia/Kolkata timezone).</div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes" class="form-label">Special Notes / Landmarks (Optional)</label>
+          <textarea id="notes" name="notes" class="form-control" rows="1" maxlength="1000" placeholder="e.g. Near irrigation well, gate code, or field access notes"></textarea>
+          <div class="form-text">Any field landmarks to assist our collection team.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
+        <button type="button" id="btn-step-1-next" class="btn btn-primary">
+          Next: Select Time Slot &rarr;
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Time Slot Selection -->
+    <div class="wizard-step" id="booking-step-2">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--slate-900);">
+        Step 2: Choose Official Collection Time Window
+      </h3>
+      <p class="text-muted" style="font-size: 0.88rem; margin-bottom: 1.25rem;">
+        Select an official visit window. Visits occur within your chosen window for field soil core sampling.
+      </p>
+
+      <!-- Slot Selection Radio Cards -->
+      <div class="slot-cards-grid">
+        <label class="slot-card selected" id="slot-card-morning">
+          <input type="radio" name="slot_choice" value="09:00-12:00" checked>
+          <div class="slot-title"><span>🌅</span> Morning Window</div>
+          <div class="slot-time">09:00 AM – 12:00 PM</div>
+          <p class="slot-desc">Recommended for early morning soil moisture inspection and sample extraction before peak heat.</p>
+        </label>
+
+        <label class="slot-card" id="slot-card-afternoon">
+          <input type="radio" name="slot_choice" value="14:00-17:00">
+          <div class="slot-title"><span>☀️</span> Afternoon Window</div>
+          <div class="slot-time">02:00 PM – 05:00 PM</div>
+          <p class="slot-desc">Convenient afternoon window for farm visit and on-site soil sampling verification.</p>
+        </label>
+      </div>
+
+      <!-- Synchronized native select for backend compatibility -->
+      <select id="preferred_time" name="preferred_time" style="display: none;" required>
+        <option value="09:00-12:00" selected>Morning (09:00 - 12:00)</option>
+        <option value="14:00-17:00">Afternoon (14:00 - 17:00)</option>
+      </select>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+        <button type="button" id="btn-step-2-prev" class="btn btn-secondary">
+          &larr; Back to Plot Details
+        </button>
+        <button type="button" id="btn-step-2-next" class="btn btn-primary">
+          Next: Review &amp; Confirm &rarr;
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Review and Confirmation -->
+    <div class="wizard-step" id="booking-step-3">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--slate-900);">
+        Step 3: Review &amp; Confirm Soil Test Request
+      </h3>
+      <p class="text-muted" style="font-size: 0.88rem; margin-bottom: 1.25rem;">
+        Please verify all details carefully before submitting your appointment request.
+      </p>
+
+      <div class="review-summary-card">
+        <div class="review-grid">
+          <div class="review-item">
+            <span class="review-label">Land / Field Details</span>
+            <span class="review-value" id="review-land">—</span>
+          </div>
+          <div class="review-item">
+            <span class="review-label">Farm Location / Address</span>
+            <span class="review-value" id="review-address">—</span>
+          </div>
+          <div class="review-item">
+            <span class="review-label">Scheduled Date</span>
+            <span class="review-value" id="review-date">—</span>
+          </div>
+          <div class="review-item">
+            <span class="review-label">Collection Window</span>
+            <span class="review-value" id="review-time">—</span>
+          </div>
+          <div class="review-item" style="grid-column: 1 / -1;">
+            <span class="review-label">Special Notes / Landmarks</span>
+            <span class="review-value" id="review-notes">—</span>
+          </div>
+        </div>
+
+        <div class="review-notice">
+          <strong>Notice:</strong> Your appointment will be submitted with initial status <strong>Pending</strong> awaiting coordinator review. Submitting does not finalize lab booking until approved by the laboratory.
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+        <button type="button" id="btn-step-3-prev" class="btn btn-secondary">
+          &larr; Edit Details
+        </button>
+        <button type="submit" id="btn-submit-appointment" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-weight: 700;">
+          Confirm &amp; Book Appointment
+        </button>
+      </div>
+    </div>
+
+    <!-- Alert / Feedback Area -->
+    <div id="booking-error" class="alert alert-error" style="display: none; margin-top: 1.25rem;"></div>
+    <div id="booking-success" class="alert alert-success" style="display: none; margin-top: 1.25rem;"></div>
+  </form>
+</section>
+
+<!-- My Appointments List Card with Accessible Status Tabs -->
+<section class="card">
+  <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h2 class="card-title">My Soil Testing Appointments</h2>
+      <p class="text-muted" style="font-size: 0.88rem; margin-top: 0.25rem;">View status history and download certified laboratory test reports.</p>
+    </div>
+    <button id="btn-refresh-appointments" class="btn btn-secondary btn-sm" type="button">Refresh</button>
+  </div>
+
+  <!-- Status Filter Tabs (21st.dev Segmented Pill Filter) -->
+  <div class="farmer-tabs-container" role="tablist" aria-label="Appointment Status Filter">
+    <button type="button" class="farmer-tab-btn active" data-status="All" id="tab-all" role="tab" aria-selected="true">
+      All <span class="farmer-tab-count" id="count-all">0</span>
+    </button>
+    <button type="button" class="farmer-tab-btn" data-status="Pending" id="tab-pending" role="tab" aria-selected="false">
+      Pending <span class="farmer-tab-count" id="count-pending">0</span>
+    </button>
+    <button type="button" class="farmer-tab-btn" data-status="Approved" id="tab-approved" role="tab" aria-selected="false">
+      Approved <span class="farmer-tab-count" id="count-approved">0</span>
+    </button>
+    <button type="button" class="farmer-tab-btn" data-status="Rejected" id="tab-rejected" role="tab" aria-selected="false">
+      Rejected <span class="farmer-tab-count" id="count-rejected">0</span>
+    </button>
+    <button type="button" class="farmer-tab-btn" data-status="Completed" id="tab-completed" role="tab" aria-selected="false">
+      Completed <span class="farmer-tab-count" id="count-completed">0</span>
+    </button>
+  </div>
+
+  <div id="appointments-loading" style="text-align: center; padding: 2rem; color: var(--slate-600);">
+    <span class="spinner" style="border-top-color: var(--primary);"></span> Loading your appointments...
+  </div>
+
+  <div id="appointments-empty" class="empty-state" style="display: none;">
+    <div class="empty-state-icon">📋</div>
+    <h3 class="empty-state-title" id="empty-state-title">No appointments found</h3>
+    <p id="empty-state-desc">You have not booked any soil testing appointments yet. Use the form above to book your first test.</p>
+  </div>
+
+  <div class="table-responsive" id="appointments-table-container" style="display: none;">
+    <table class="table" id="appointments-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Preferred Date &amp; Time</th>
+          <th>Land Details</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Report</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="appointments-tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Appointment Details & Report Modal -->
+<div id="appointment-modal" class="modal-backdrop" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title">Appointment Details</h3>
+      <button type="button" class="modal-close" id="modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- Dynamic Details Filled by JS -->
+    </div>
+    <div class="modal-footer" id="modal-footer">
+      <button type="button" class="btn btn-secondary" id="modal-cancel-btn">Close</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/farmer.js') }}"></script>
+{% endblock %}

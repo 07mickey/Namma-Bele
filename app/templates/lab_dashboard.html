@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}Laboratory Workspace — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">🧪 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Diagnostic Laboratory</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">Laboratory Operations Workspace</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Sample intake, drying/sieving, photometric/titration assays, and scientific certification.</p>
+        </div>
+      </div>
+      <button id="btn-refresh-lab" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">Refresh Queue</button>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+      <h3 style="margin: 0; color: var(--color-forest-green);">🔬 Laboratory Testing Pipeline</h3>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <label for="filter-lab-status" style="font-size: 0.88rem; font-weight: 600;">Status:</label>
+        <select id="filter-lab-status" class="form-control" style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.88rem;">
+          <option value="">All Samples</option>
+          <option value="In_Transit">In Transit to Lab</option>
+          <option value="Received">Received at Lab</option>
+          <option value="Testing">Testing in Progress</option>
+          <option value="Completed">Testing Completed</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="lab-loading" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">
+      <span class="spinner" style="border-top-color: var(--primary);"></span> Loading laboratory queue...
+    </div>
+
+    <div id="lab-empty" class="empty-state" style="display: none;">
+      <div class="empty-state-icon">🧪</div>
+      <h3 class="empty-state-title">No samples in queue</h3>
+      <p>No soil samples currently match the selected laboratory filter.</p>
+    </div>
+
+    <div class="table-responsive" id="lab-table-container" style="display: none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Sample Code</th>
+            <th>Farmer &amp; Plot</th>
+            <th>Depth / Appearance</th>
+            <th>Sample Status</th>
+            <th>Assay Ratings</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="lab-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Record Chemical Assay Measurements -->
+<div id="modal-assay" class="modal-backdrop" style="display: none;">
+  <div class="modal-dialog" style="max-width: 620px;">
+    <div class="modal-header">
+      <h3 class="modal-title">⚗️ Record Chemical Assay Measurements</h3>
+      <button type="button" class="modal-close" id="btn-close-assay-modal">&times;</button>
+    </div>
+    <form id="form-record-assay" style="padding: 1.5rem;">
+      <input type="hidden" id="assay-sample-id">
+
+      <div style="background: var(--color-bg-light); padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.82rem; color: var(--color-text-muted); font-weight: 600;">SAMPLE BARCODE</div>
+        <div style="font-size: 1.25rem; font-weight: 700; color: var(--color-forest-green); font-family: monospace;" id="modal-assay-sample-code">SMP-2026-00001</div>
+      </div>
+
+      <!-- Soil Reaction & Salts -->
+      <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: var(--color-forest-green); border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
+        1. Soil Reaction &amp; Soluble Salts
+      </h4>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">pH (1:2.5 soil-water) <span class="required">*</span></label>
+          <input type="number" id="val-ph" class="form-control" step="0.01" min="0" max="14" placeholder="e.g. 6.80" required>
+          <small id="preview-ph" style="font-weight: 600; color: var(--color-text-muted); font-size: 0.8rem;">Rating: —</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">EC (dS/m) <span class="required">*</span></label>
+          <input type="number" id="val-ec" class="form-control" step="0.01" min="0" placeholder="e.g. 0.42" required>
+          <small id="preview-ec" style="font-weight: 600; color: var(--color-text-muted); font-size: 0.8rem;">Rating: —</small>
+        </div>
+      </div>
+
+      <!-- Organic Carbon & Macronutrients -->
+      <h4 style="margin: 0.75rem 0 0.5rem 0; font-size: 0.95rem; color: var(--color-forest-green); border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
+        2. Organic Matter &amp; Primary Nutrients (NPK)
+      </h4>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Organic Carbon (%) <span class="required">*</span></label>
+          <input type="number" id="val-oc" class="form-control" step="0.01" min="0" max="100" placeholder="e.g. 0.65" required>
+          <small id="preview-oc" style="font-weight: 600; color: var(--color-text-muted); font-size: 0.8rem;">Rating: —</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Available Nitrogen (kg/ha) <span class="required">*</span></label>
+          <input type="number" id="val-n" class="form-control" step="0.1" min="0" placeholder="e.g. 310.0" required>
+          <small id="preview-n" style="font-weight: 600; color: var(--color-text-muted); font-size: 0.8rem;">Rating: —</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Available Phosphorus (kg/ha) <span class="required">*</span></label>
+          <input type="number" id="val-p" class="form-control" step="0.1" min="0" placeholder="e.g. 28.5" required>
+          <small id="preview-p" style="font-weight: 600; color: var(--color-text-muted); font-size: 0.8rem;">Rating: —</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Available Potassium (kg/ha) <span class="required">*</span></label>
+          <input type="number" id="val-k" class="form-control" step="0.1" min="0" placeholder="e.g. 215.0" required>
+          <small id="preview-k" style="font-weight: 600; color: var(--color-text-muted); font-size: 0.8rem;">Rating: —</small>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label class="form-label">Analyst Remarks</label>
+        <textarea id="val-remarks" class="form-control" rows="2" placeholder="e.g. Standard spectrophotometric test, Walkley-Black OC method."></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-assay">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-save-assay">Save Assay &amp; Submit for Review</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const loading = document.getElementById('lab-loading');
+  const empty = document.getElementById('lab-empty');
+  const tableContainer = document.getElementById('lab-table-container');
+  const tbody = document.getElementById('lab-tbody');
+  const filterSelect = document.getElementById('filter-lab-status');
+  const btnRefresh = document.getElementById('btn-refresh-lab');
+
+  const modalAssay = document.getElementById('modal-assay');
+  const formAssay = document.getElementById('form-record-assay');
+  const sampleIdInput = document.getElementById('assay-sample-id');
+  const sampleCodeEl = document.getElementById('modal-assay-sample-code');
+
+  // Input & preview elements
+  const inPh = document.getElementById('val-ph');
+  const inEc = document.getElementById('val-ec');
+  const inOc = document.getElementById('val-oc');
+  const inN = document.getElementById('val-n');
+  const inP = document.getElementById('val-p');
+  const inK = document.getElementById('val-k');
+
+  const prevPh = document.getElementById('preview-ph');
+  const prevEc = document.getElementById('preview-ec');
+  const prevOc = document.getElementById('preview-oc');
+  const prevN = document.getElementById('preview-n');
+  const prevP = document.getElementById('preview-p');
+  const prevK = document.getElementById('preview-k');
+
+  function updateLiveRatings() {
+    const ph = parseFloat(inPh.value);
+    if (!isNaN(ph)) {
+      prevPh.textContent = ph < 6.0 ? 'Rating: Acidic' : (ph <= 7.5 ? 'Rating: Neutral / Optimal' : 'Rating: Alkaline');
+    }
+    const ec = parseFloat(inEc.value);
+    if (!isNaN(ec)) {
+      prevEc.textContent = ec < 1.0 ? 'Rating: Normal' : (ec <= 2.0 ? 'Rating: Critical' : 'Rating: Saline');
+    }
+    const oc = parseFloat(inOc.value);
+    if (!isNaN(oc)) {
+      prevOc.textContent = oc < 0.5 ? 'Rating: Low' : (oc <= 0.75 ? 'Rating: Medium' : 'Rating: High');
+    }
+    const n = parseFloat(inN.value);
+    if (!isNaN(n)) {
+      prevN.textContent = n < 280 ? 'Rating: Low' : (n <= 560 ? 'Rating: Medium' : 'Rating: High');
+    }
+    const p = parseFloat(inP.value);
+    if (!isNaN(p)) {
+      prevP.textContent = p < 23 ? 'Rating: Low' : (p <= 56 ? 'Rating: Medium' : 'Rating: High');
+    }
+    const k = parseFloat(inK.value);
+    if (!isNaN(k)) {
+      prevK.textContent = k < 145 ? 'Rating: Low' : (k <= 337 ? 'Rating: Medium' : 'Rating: High');
+    }
+  }
+
+  [inPh, inEc, inOc, inN, inP, inK].forEach(el => el.addEventListener('input', updateLiveRatings));
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  async function loadSamples() {
+    loading.style.display = 'block';
+    empty.style.display = 'none';
+    tableContainer.style.display = 'none';
+
+    try {
+      const status = filterSelect.value;
+      const url = status ? `/api/lab/samples?status=${status}` : '/api/lab/samples';
+      const res = await API.get(url);
+      const samples = res.samples || [];
+      loading.style.display = 'none';
+
+      if (samples.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      tableContainer.style.display = 'block';
+
+      samples.forEach(s => {
+        const tr = document.createElement('tr');
+
+        let actionsHtml = '';
+        if (s.sample_status === 'In_Transit' || s.sample_status === 'Collected') {
+          actionsHtml = `<button class="btn btn-primary btn-sm btn-receive" data-id="${s.sample_id}">Receive at Lab</button>`;
+        } else if (s.sample_status === 'Received') {
+          actionsHtml = `<button class="btn btn-primary btn-sm btn-start-test" data-id="${s.sample_id}">Start Testing</button>`;
+        } else if (s.sample_status === 'Testing') {
+          actionsHtml = `<button class="btn btn-primary btn-sm btn-open-assay" data-id="${s.sample_id}" data-code="${s.sample_code}">Enter Assays</button>`;
+        }
+
+        if (s.assay_id) {
+          if (s.assay_status === 'Submitted') {
+            actionsHtml += ` <button class="btn btn-secondary btn-sm btn-authorize" data-assay-id="${s.assay_id}" style="color: var(--color-primary-green); font-weight: 700;">Authorize Report</button>`;
+          } else if (s.assay_status === 'Authorized') {
+            actionsHtml = `<span style="color: var(--color-primary-green); font-weight: 700; font-size: 0.85rem;">✓ Certified &amp; Authorized</span>`;
+          }
+        }
+
+        let ratingsBadge = '<span style="color: var(--color-text-muted); font-size: 0.85rem;">Pending</span>';
+        if (s.ph_value !== null && s.ph_value !== undefined) {
+          ratingsBadge = `
+            <div style="font-size: 0.82rem; line-height: 1.4;">
+              <strong>pH:</strong> ${s.ph_value.toFixed(1)} | <strong>OC:</strong> ${s.organic_carbon_pct}%<br>
+              <strong>NPK:</strong> ${s.nitrogen_kg_ha.toFixed(0)} / ${s.phosphorus_kg_ha.toFixed(0)} / ${s.potassium_kg_ha.toFixed(0)}
+            </div>
+          `;
+        }
+
+        tr.innerHTML = `
+          <td><code style="font-weight: 700; color: var(--color-forest-green); font-size: 0.95rem;">${escapeHtml(s.sample_code)}</code></td>
+          <td>
+            <strong>${escapeHtml(s.farmer_name)}</strong><br>
+            <small style="color: var(--color-text-muted);">${escapeHtml(s.land_details)}</small>
+          </td>
+          <td><small>${s.sampling_depth_cm} cm | ${escapeHtml(s.soil_appearance || 'Standard')}</small></td>
+          <td><span class="badge ${s.sample_status === 'Completed' ? 'badge-approved' : 'badge-pending'}">${escapeHtml(s.sample_status)}</span></td>
+          <td>${ratingsBadge}</td>
+          <td>${actionsHtml}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      // Bind button events
+      document.querySelectorAll('.btn-receive').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          try {
+            await API.post(`/api/lab/samples/${btn.dataset.id}/receive`, {});
+            window.showAlert('Sample received and checked in at lab.', 'success');
+            loadSamples();
+          } catch (err) {
+            window.showAlert(err.message || 'Error receiving sample.', 'error');
+          }
+        });
+      });
+
+      document.querySelectorAll('.btn-start-test').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          try {
+            await API.post(`/api/lab/samples/${btn.dataset.id}/start-test`, {});
+            window.showAlert('Testing commenced.', 'success');
+            loadSamples();
+          } catch (err) {
+            window.showAlert(err.message || 'Error starting test.', 'error');
+          }
+        });
+      });
+
+      document.querySelectorAll('.btn-open-assay').forEach(btn => {
+        btn.addEventListener('click', () => {
+          sampleIdInput.value = btn.dataset.id;
+          sampleCodeEl.textContent = btn.dataset.code;
+          modalAssay.style.display = 'flex';
+        });
+      });
+
+      document.querySelectorAll('.btn-authorize').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Authorize this chemical soil report and certify for publication?')) return;
+          try {
+            await API.post(`/api/lab/assays/${btn.dataset.assayId}/authorize`, {});
+            window.showAlert('Report authorized and queued for Speed Post physical dispatch!', 'success');
+            loadSamples();
+          } catch (err) {
+            window.showAlert(err.message || 'Authorization failed.', 'error');
+          }
+        });
+      });
+    } catch (err) {
+      loading.style.display = 'none';
+      window.showAlert(err.message || 'Error loading laboratory pipeline.', 'error');
+    }
+  }
+
+  filterSelect.addEventListener('change', loadSamples);
+  btnRefresh.addEventListener('click', loadSamples);
+  document.getElementById('btn-close-assay-modal').addEventListener('click', () => modalAssay.style.display = 'none');
+  document.getElementById('btn-cancel-assay').addEventListener('click', () => modalAssay.style.display = 'none');
+
+  formAssay.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const sampleId = sampleIdInput.value;
+    const ph_value = parseFloat(inPh.value);
+    const ec_ds_m = parseFloat(inEc.value);
+    const organic_carbon_pct = parseFloat(inOc.value);
+    const nitrogen_kg_ha = parseFloat(inN.value);
+    const phosphorus_kg_ha = parseFloat(inP.value);
+    const potassium_kg_ha = parseFloat(inK.value);
+    const remarks = document.getElementById('val-remarks').value.trim();
+
+    if (isNaN(ph_value) || isNaN(ec_ds_m) || isNaN(organic_carbon_pct) || isNaN(nitrogen_kg_ha) || isNaN(phosphorus_kg_ha) || isNaN(potassium_kg_ha)) {
+      window.showAlert('All 6 chemical measurement values are required.', 'error');
+      return;
+    }
+
+    try {
+      const res = await API.post(`/api/lab/samples/${sampleId}/assay`, {
+        ph_value,
+        ec_ds_m,
+        organic_carbon_pct,
+        nitrogen_kg_ha,
+        phosphorus_kg_ha,
+        potassium_kg_ha,
+        remarks,
+      });
+
+      window.showAlert('Chemical assay measurements recorded successfully!', 'success');
+      modalAssay.style.display = 'none';
+      formAssay.reset();
+      loadSamples();
+    } catch (err) {
+      window.showAlert(err.message || 'Error recording assay measurements.', 'error');
+    }
+  });
+
+  loadSamples();
+});
+</script>
+{% endblock %}
+

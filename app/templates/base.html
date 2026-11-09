@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NAMMA BELE{% endblock %} — Soil Testing &amp; Farmer Services</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo.svg') }}">
+  <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='img/favicon.png') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand" aria-label="NAMMA BELE Home">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="brand-logo-img">
+        <div class="brand-text-block">
+          <span class="brand-name">NAMMA BELE</span>
+          <span class="brand-subtext">ನಮ್ಮ ಬೆಳೆ</span>
+        </div>
+      </a>
+      
+      <nav class="nav-links" id="main-nav">
+        <a href="/" class="nav-item">Home</a>
+        <a href="/soil-guide" class="nav-item">Soil Guide</a>
+        <a href="/contact" class="nav-item">Contact &amp; Support</a>
+        <a href="/farmer" id="nav-dashboard-link" class="nav-item" style="display: none;">Portal</a>
+        <span id="nav-guest-links">
+          <a href="/login" class="nav-item">Login</a>
+          <a href="/register" class="btn btn-primary btn-sm">Register as Farmer</a>
+        </span>
+        <div id="nav-auth-user" class="nav-user" style="display: none;">
+          <span id="nav-user-role" class="role-badge"></span>
+          <span id="nav-user-name" style="font-weight: 600;"></span>
+          <button id="btn-logout" class="btn btn-secondary btn-sm" type="button">Logout</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Global Alert / Feedback Area -->
+  <div class="main-content" style="padding-bottom: 0;">
+    <div id="global-alert" style="display: none;"></div>
+  </div>
+
+  <!-- Page Content -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="nav-container" style="justify-content: center; text-align: center; flex-direction: column; gap: 0.5rem;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 0.6rem;">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" style="height: 28px; width: auto; object-fit: contain;">
+        <span style="font-weight: 700; color: var(--namma-brown, #3c2115); font-size: 1rem;">NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ</span>
+      </div>
+      <p style="margin: 0; font-size: 0.88rem; color: var(--color-text-muted);">&copy; 2026 NAMMA BELE &mdash; Soil Testing &amp; Farmer Agricultural Service Platform. A Community Agricultural Initiative.</p>
+    </div>
+  </footer>
+
+  <!-- Reusable API Client Helper -->
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script>
+    // Universal UI Notification Helper (XSS-safe textContent rendering)
+    window.showAlert = function(message, type = 'info', timeoutMs = 6000) {
+      const container = document.getElementById('global-alert');
+      if (!container) return;
+      container.className = `alert alert-${type}`;
+      const span = document.createElement('span');
+      span.textContent = String(message || '');
+      container.replaceChildren(span);
+      container.style.display = 'flex';
+      if (timeoutMs > 0) {
+        setTimeout(() => {
+          if (container.textContent.includes(message)) {
+            container.style.display = 'none';
+          }
+        }, timeoutMs);
+      }
+    };
+
+    window.hideAlert = function() {
+      const container = document.getElementById('global-alert');
+      if (container) container.style.display = 'none';
+    };
+
+    // Shared Navbar Session Synchronizer
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const authData = await API.checkAuth();
+        const guestLinks = document.getElementById('nav-guest-links');
+        const authUser = document.getElementById('nav-auth-user');
+        const userRole = document.getElementById('nav-user-role');
+        const userName = document.getElementById('nav-user-name');
+        const logoutBtn = document.getElementById('btn-logout');
+        const dashboardLink = document.getElementById('nav-dashboard-link');
+
+        if (authData && authData.authenticated && authData.user) {
+          if (guestLinks) guestLinks.style.display = 'none';
+          if (authUser) authUser.style.display = 'flex';
+          if (dashboardLink) {
+            dashboardLink.style.display = 'inline-flex';
+            if (authData.user.role === 'admin') {
+              dashboardLink.href = '/admin';
+              dashboardLink.textContent = 'Admin Console';
+            } else if (authData.user.role === 'operator') {
+              dashboardLink.href = '/operator';
+              dashboardLink.textContent = 'Operator Desk';
+            } else if (authData.user.role === 'field_worker') {
+              dashboardLink.href = '/field-worker';
+              dashboardLink.textContent = 'Field Visits';
+            } else if (authData.user.role === 'lab_staff') {
+              dashboardLink.href = '/lab';
+              dashboardLink.textContent = 'Laboratory';
+            } else if (authData.user.role === 'advisor') {
+              dashboardLink.href = '/advisor';
+              dashboardLink.textContent = 'Expert Desk';
+            } else {
+              dashboardLink.href = '/farmer';
+              dashboardLink.textContent = 'Farmer Portal';
+            }
+          }
+          if (userRole) {
+            userRole.textContent = authData.user.role;
+            userRole.className = `role-badge ${authData.user.role}`;
+          }
+          if (userName) {
+            userName.textContent = `${authData.user.name} (${authData.user.phone})`;
+          }
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+              try {
+                await API.logout();
+                window.location.href = '/';
+              } catch (err) {
+                window.location.href = '/';
+              }
+            });
+          }
+        } else {
+          if (guestLinks) guestLinks.style.display = 'inline-flex';
+          if (authUser) authUser.style.display = 'none';
+        }
+      } catch (err) {
+        // Silently treat as guest if checkAuth fails
+      }
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
+

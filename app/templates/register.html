@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Registration — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 2rem auto;">
+  <div class="card">
+    <div style="text-align: center; padding-top: 1.5rem; margin-bottom: 0.25rem;">
+      <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" style="height: 60px; width: auto; object-fit: contain;">
+      <div style="font-size: 1.15rem; font-weight: 850; color: var(--namma-brown, #3c2115); margin-top: 0.35rem; letter-spacing: 0.03em;">NAMMA BELE</div>
+      <div style="font-size: 0.82rem; font-weight: 700; color: var(--namma-terracotta, #af7137);">ನಮ್ಮ ಬೆಳೆ</div>
+    </div>
+
+    <div class="card-header" style="text-align: center; padding-top: 0.5rem;">
+      <h1 class="card-title">Farmer Registration</h1>
+    </div>
+
+    <form id="register-form" novalidate>
+      <div class="form-group">
+        <label for="name" class="form-label">Full Name <span class="required">*</span></label>
+        <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Ramesh Kumar" required maxlength="100" autocomplete="name">
+        <div class="form-text">Enter your full official name.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone" class="form-label">Phone Number (E.164 format) <span class="required">*</span></label>
+        <input type="tel" id="phone" name="phone" class="form-control" placeholder="+919876543210" required maxlength="20" autocomplete="tel">
+        <div class="form-text">Include country code starting with + (e.g. +91 for India).</div>
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password <span class="required">*</span></label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Minimum 8 characters" required minlength="8" autocomplete="new-password">
+        <div class="form-text">Must be at least 8 characters long.</div>
+      </div>
+
+      <div id="register-error" class="alert alert-error" style="display: none;"></div>
+
+      <button type="submit" id="btn-submit-register" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+        Register as Farmer
+      </button>
+    </form>
+
+    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.95rem; color: var(--slate-600);">
+      Already have an account? <a href="/login">Login here</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('register-form');
+    const submitBtn = document.getElementById('btn-submit-register');
+    const errorBox = document.getElementById('register-error');
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+    }
+
+    function clearError() {
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value;
+
+      // 1. Client-side validations
+      if (!name) {
+        showError('Please enter your full name.');
+        return;
+      }
+      if (!phone) {
+        showError('Please enter your phone number in E.164 format (e.g. +919876543210).');
+        return;
+      }
+      if (!phone.startsWith('+') || phone.length < 8) {
+        showError('Phone number must start with + followed by country code and digits (e.g. +919876543210).');
+        return;
+      }
+      if (!password || password.length < 8) {
+        showError('Password must be at least 8 characters long.');
+        return;
+      }
+
+      // 2. Submit to API with loading state
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Registering...';
+
+      try {
+        const response = await API.post('/api/auth/register', { name, phone, password });
+        showAlert('Registration successful! Please log in with your credentials.', 'success');
+        setTimeout(() => {
+          window.location.href = '/login?registered=1';
+        }, 1200);
+      } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Register as Farmer';
+        showError(err.message || 'Registration failed. Please check your information and try again.');
+      }
+    });
+  });
+</script>
+{% endblock %}
+

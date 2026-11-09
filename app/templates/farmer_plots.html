@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Farm Plots &amp; Land Holdings — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1050px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">🗺️ NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Land Registry</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">My Farm Plots</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Maintain accurate survey numbers, plot sizes, soil categories, and irrigation sources.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="#new-plot-section" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">+ Add New Plot</a>
+        <a href="/farmer" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.2); color: white;">Farmer Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plots Grid Container -->
+  <div id="plots-loading" style="text-align: center; padding: 2rem; color: var(--slate-600);">
+    <span class="spinner" style="border-top-color: var(--primary);"></span> Loading farm plots...
+  </div>
+
+  <div id="plots-empty" class="empty-state" style="display: none;">
+    <div class="empty-state-icon">🌾</div>
+    <h3 class="empty-state-title">No farm plots registered yet</h3>
+    <p>Register your first agricultural land parcel below with its survey number and acreage.</p>
+  </div>
+
+  <div id="plots-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; display: none;">
+    <!-- Plot cards populated by JavaScript -->
+  </div>
+
+  <!-- Add New Plot Card -->
+  <section id="new-plot-section" class="card" style="padding: 1.75rem;">
+    <h3 style="margin-top: 0; margin-bottom: 0.5rem; color: var(--color-forest-green);">➕ Register New Farm Plot</h3>
+    <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+      Add plot details to easily select this parcel during soil test bookings and crop yield tracking.
+    </p>
+
+    <form id="new-plot-form" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="plot_name" class="form-label">Plot Name / Identifier <span class="required">*</span></label>
+          <input type="text" id="plot_name" name="plot_name" class="form-control" placeholder="e.g. North Wetland, Canal Side Plot" required maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="survey_number" class="form-label">Land Survey Number <span class="required">*</span></label>
+          <input type="text" id="survey_number" name="survey_number" class="form-control" placeholder="e.g. SY-44/2A" required maxlength="50">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="plot_area" class="form-label">Acreage / Area Size <span class="required">*</span></label>
+          <input type="number" id="plot_area" name="area" class="form-control" step="0.01" min="0.01" placeholder="e.g. 3.50" required>
+        </div>
+        <div class="form-group">
+          <label for="area_unit" class="form-label">Area Unit <span class="required">*</span></label>
+          <select id="area_unit" name="area_unit" class="form-control" required>
+            <option value="Acres" selected>Acres</option>
+            <option value="Guntas">Guntas (40 Guntas = 1 Acre)</option>
+            <option value="Hectares">Hectares (1 Hectare = 2.47 Acres)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="soil_type" class="form-label">Predominant Soil Type</label>
+          <select id="soil_type" name="soil_type" class="form-control">
+            <option value="Red Sandy Loam" selected>Red Sandy Loam</option>
+            <option value="Clayey Loam">Clayey Loam (Black Soil)</option>
+            <option value="Alluvial">Alluvial River Basin Soil</option>
+            <option value="Laterite">Laterite Soil</option>
+            <option value="Sandy Soil">Sandy Coastal Soil</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="irrigation_source" class="form-label">Primary Irrigation Source</label>
+          <select id="irrigation_source" name="irrigation_source" class="form-control">
+            <option value="Rainfed" selected>Rainfed</option>
+            <option value="Canal">Canal Irrigation</option>
+            <option value="Borewell">Borewell</option>
+            <option value="Drip">Drip Irrigation</option>
+            <option value="Sprinkler">Sprinkler Irrigation</option>
+            <option value="Well">Open Well</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="plot_taluk" class="form-label">Taluk</label>
+          <input type="text" id="plot_taluk" name="taluk" class="form-control" placeholder="e.g. Maddur">
+        </div>
+        <div class="form-group">
+          <label for="plot_district" class="form-label">District</label>
+          <input type="text" id="plot_district" name="district" class="form-control" placeholder="e.g. Mandya">
+        </div>
+      </div>
+
+      <button type="submit" id="btn-save-plot" class="btn btn-primary" style="margin-top: 0.5rem; padding: 0.75rem 1.5rem;">
+        Save Farm Plot
+      </button>
+    </form>
+  </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const loading = document.getElementById('plots-loading');
+  const empty = document.getElementById('plots-empty');
+  const grid = document.getElementById('plots-grid');
+  const form = document.getElementById('new-plot-form');
+  const saveBtn = document.getElementById('btn-save-plot');
+
+  async function loadPlots() {
+    loading.style.display = 'block';
+    empty.style.display = 'none';
+    grid.style.display = 'none';
+
+    try {
+      const res = await API.get('/api/farm/plots');
+      const plots = res.plots || [];
+      loading.style.display = 'none';
+
+      if (plots.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
+
+      grid.innerHTML = '';
+      grid.style.display = 'grid';
+
+      plots.forEach(plot => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.padding = '1.25rem';
+        card.style.borderTop = '4px solid var(--color-primary-green)';
+
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <h3 style="margin: 0; font-size: 1.15rem; color: var(--color-forest-green);">${escapeHtml(plot.plot_name)}</h3>
+            <span class="badge badge-approved">${escapeHtml(plot.area)} ${escapeHtml(plot.area_unit)}</span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--color-text-muted); margin: 0 0 0.75rem 0;">
+            <strong>Survey #:</strong> ${escapeHtml(plot.survey_number)} | 
+            <strong>Soil:</strong> ${escapeHtml(plot.soil_type)}
+          </p>
+          <div style="background: var(--color-bg-light); padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem;">
+            <div>💧 <strong>Irrigation:</strong> ${escapeHtml(plot.irrigation_source)}</div>
+            ${plot.taluk ? `<div>📍 <strong>Location:</strong> ${escapeHtml(plot.taluk)}, ${escapeHtml(plot.district || '')}</div>` : ''}
+          </div>
+          <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+            <a href="/farmer/crop-history?plot_id=${plot.id}" class="btn btn-secondary btn-sm">Crop History</a>
+            <a href="/farmer#booking-section" class="btn btn-primary btn-sm">Book Test</a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    } catch (err) {
+      loading.style.display = 'none';
+      window.showAlert(err.message || 'Could not load plots.', 'error');
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const plot_name = document.getElementById('plot_name').value.trim();
+    const survey_number = document.getElementById('survey_number').value.trim();
+    const area = parseFloat(document.getElementById('plot_area').value);
+    const area_unit = document.getElementById('area_unit').value;
+    const soil_type = document.getElementById('soil_type').value;
+    const irrigation_source = document.getElementById('irrigation_source').value;
+    const taluk = document.getElementById('plot_taluk').value.trim();
+    const district = document.getElementById('plot_district').value.trim();
+
+    if (!plot_name || !survey_number || isNaN(area) || area <= 0) {
+      window.showAlert('Please enter valid plot name, survey number, and area size.', 'error');
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    try {
+      await API.post('/api/farm/plots', {
+        plot_name,
+        survey_number,
+        area,
+        area_unit,
+        soil_type,
+        irrigation_source,
+        taluk,
+        district,
+      });
+
+      window.showAlert(`Plot '${plot_name}' added successfully!`, 'success');
+      form.reset();
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Farm Plot';
+      loadPlots();
+    } catch (err) {
+      window.showAlert(err.message || 'Failed to save plot.', 'error');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Farm Plot';
+    }
+  });
+
+  loadPlots();
+});
+</script>
+{% endblock %}
+

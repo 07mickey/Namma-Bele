@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Field Visits &amp; Sample Collection — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1050px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">🚜 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Field Operations</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">Field Technician Portal</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Assigned farm visits, GPS tagging, root depth logging, and transit dispatch.</p>
+        </div>
+      </div>
+      <button id="btn-refresh-visits" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">Refresh Schedule</button>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+    <h3 style="margin-top: 0; color: var(--color-forest-green); margin-bottom: 1rem;">📋 Assigned Field Visits</h3>
+
+    <div id="visits-loading" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">
+      <span class="spinner" style="border-top-color: var(--primary);"></span> Loading scheduled visits...
+    </div>
+
+    <div id="visits-empty" class="empty-state" style="display: none;">
+      <div class="empty-state-icon">🚜</div>
+      <h3 class="empty-state-title">No assigned visits for you</h3>
+      <p>All scheduled visits have been completed or no pending appointments are currently assigned to your account.</p>
+    </div>
+
+    <div class="table-responsive" id="visits-table-container" style="display: none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Scheduled Date &amp; Slot</th>
+            <th>Farmer</th>
+            <th>Field Location</th>
+            <th>Sample Code</th>
+            <th>Visit Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="visits-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Log Sample Collection -->
+<div id="modal-collect" class="modal-backdrop" style="display: none;">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3 class="modal-title">🌾 Log Soil Core Sample Collection</h3>
+      <button type="button" class="modal-close" id="btn-close-collect-modal">&times;</button>
+    </div>
+    <form id="form-collect-sample" style="padding: 1.25rem;">
+      <input type="hidden" id="collect-visit-id">
+
+      <div style="background: var(--color-bg-light); padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem;">
+        <div style="font-weight: 700; color: var(--color-forest-green);" id="modal-farmer-info">Farmer Details</div>
+        <div style="font-size: 0.85rem; color: var(--color-text-muted);" id="modal-location-info">Location</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Core Depth (cm) <span class="required">*</span></label>
+          <input type="number" id="collect-depth" class="form-control" value="15.0" step="0.5" min="5" max="60" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Survey Number Verified</label>
+          <input type="text" id="collect-survey" class="form-control" placeholder="e.g. SY-44/1">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0.75rem;">
+        <label class="form-label">Soil Physical Appearance <span class="required">*</span></label>
+        <input type="text" id="collect-appearance" class="form-control" value="Red sandy loam, composite core sample" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">GPS Latitude</label>
+          <input type="number" id="collect-lat" class="form-control" step="0.0001" placeholder="12.5204">
+        </div>
+        <div class="form-group">
+          <label class="form-label">GPS Longitude</label>
+          <input type="number" id="collect-lng" class="form-control" step="0.0001" placeholder="76.8953">
+        </div>
+      </div>
+      <button type="button" id="btn-get-gps" class="btn btn-secondary btn-sm" style="margin-bottom: 0.75rem; font-size: 0.82rem;">
+        📍 Capture Current GPS Coordinates
+      </button>
+
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label class="form-label">Technician Notes</label>
+        <textarea id="collect-notes" class="form-control" rows="2" placeholder="e.g. 6 zigzag cores collected across 3-acre plot. Sealed in barcoded sample bag."></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-collect">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-confirm-collect">Confirm &amp; Dispatch to Lab</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const loading = document.getElementById('visits-loading');
+  const empty = document.getElementById('visits-empty');
+  const tableContainer = document.getElementById('visits-table-container');
+  const tbody = document.getElementById('visits-tbody');
+  const btnRefresh = document.getElementById('btn-refresh-visits');
+
+  const modal = document.getElementById('modal-collect');
+  const form = document.getElementById('form-collect-sample');
+  const visitIdInput = document.getElementById('collect-visit-id');
+  const modalFarmerInfo = document.getElementById('modal-farmer-info');
+  const modalLocationInfo = document.getElementById('modal-location-info');
+
+  const btnGetGps = document.getElementById('btn-get-gps');
+  const latInput = document.getElementById('collect-lat');
+  const lngInput = document.getElementById('collect-lng');
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  async function loadVisits() {
+    loading.style.display = 'block';
+    empty.style.display = 'none';
+    tableContainer.style.display = 'none';
+
+    try {
+      const res = await API.get('/api/field-worker/visits');
+      const visits = res.visits || [];
+      loading.style.display = 'none';
+
+      if (visits.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      tableContainer.style.display = 'block';
+
+      visits.forEach(v => {
+        const tr = document.createElement('tr');
+        const isCompleted = v.visit_status === 'Completed';
+
+        tr.innerHTML = `
+          <td>
+            <strong>${escapeHtml(v.scheduled_date)}</strong><br>
+            <small style="color: var(--color-text-muted);">${escapeHtml(v.scheduled_slot)}</small>
+          </td>
+          <td>
+            <strong>${escapeHtml(v.farmer_name)}</strong><br>
+            <small>📞 ${escapeHtml(v.farmer_phone)}</small>
+          </td>
+          <td>${escapeHtml(v.land_details)}</td>
+          <td><code style="font-weight: 700; color: var(--color-forest-green);">${escapeHtml(v.sample_code || 'Pending')}</code></td>
+          <td>
+            <span class="badge ${isCompleted ? 'badge-approved' : 'badge-pending'}">${escapeHtml(v.visit_status)}</span>
+          </td>
+          <td>
+            ${!isCompleted ? `
+              <button class="btn btn-primary btn-sm btn-open-collect" 
+                      data-id="${v.visit_id}" 
+                      data-farmer="${escapeHtml(v.farmer_name)} (${escapeHtml(v.farmer_phone)})"
+                      data-location="${escapeHtml(v.land_details)}"
+                      data-survey="${escapeHtml(v.survey_number || '')}">
+                Log Collection
+              </button>
+            ` : `<span style="font-size: 0.82rem; color: var(--color-primary-green); font-weight: 600;">✓ In Transit to Lab</span>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll('.btn-open-collect').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          visitIdInput.value = btn.dataset.id;
+          modalFarmerInfo.textContent = btn.dataset.farmer;
+          modalLocationInfo.textContent = btn.dataset.location;
+          document.getElementById('collect-survey').value = btn.dataset.survey || '';
+          modal.style.display = 'flex';
+        });
+      });
+    } catch (err) {
+      loading.style.display = 'none';
+      window.showAlert(err.message || 'Error loading visits.', 'error');
+    }
+  }
+
+  btnRefresh.addEventListener('click', loadVisits);
+  document.getElementById('btn-close-collect-modal').addEventListener('click', () => modal.style.display = 'none');
+  document.getElementById('btn-cancel-collect').addEventListener('click', () => modal.style.display = 'none');
+
+  btnGetGps.addEventListener('click', () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          latInput.value = pos.coords.latitude.toFixed(4);
+          lngInput.value = pos.coords.longitude.toFixed(4);
+          window.showAlert('GPS coordinates captured.', 'success');
+        },
+        () => {
+          latInput.value = '';
+          lngInput.value = '';
+          window.showAlert('Location permission declined. GPS is optional and was omitted.', 'info');
+        }
+      );
+    } else {
+      latInput.value = '';
+      lngInput.value = '';
+      window.showAlert('Geolocation is not supported by your browser. GPS is optional.', 'info');
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const visitId = visitIdInput.value;
+    const sampling_depth_cm = parseFloat(document.getElementById('collect-depth').value);
+    const soil_appearance = document.getElementById('collect-appearance').value.trim();
+    const survey_number = document.getElementById('collect-survey').value.trim();
+    const gps_latitude = parseFloat(latInput.value) || null;
+    const gps_longitude = parseFloat(lngInput.value) || null;
+    const worker_notes = document.getElementById('collect-notes').value.trim();
+
+    try {
+      const res = await API.post(`/api/field-worker/visits/${visitId}/collect`, {
+        sampling_depth_cm,
+        soil_appearance,
+        survey_number,
+        gps_latitude,
+        gps_longitude,
+        worker_notes,
+      });
+
+      window.showAlert(`Sample ${res.sample_code} collected and marked In_Transit!`, 'success');
+      modal.style.display = 'none';
+      loadVisits();
+    } catch (err) {
+      window.showAlert(err.message || 'Failed to log sample collection.', 'error');
+    }
+  });
+
+  loadVisits();
+});
+</script>
+{% endblock %}
+

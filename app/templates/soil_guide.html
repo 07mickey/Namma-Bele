@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Soil Health &amp; Testing Guide — NAMMA BELE{% endblock %}
+
+{% block content %}
+<!-- Guide Hero Banner -->
+<div class="guide-hero">
+  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+    <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" style="height: 54px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));">
+    <div>
+      <span class="guide-badge" style="margin-bottom: 0.25rem;">🌱 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Extension Guide</span>
+    </div>
+  </div>
+  <h1 style="font-size: 2rem; font-weight: 850; letter-spacing: -0.02em; margin-bottom: 0.5rem;">
+    Farmer's Practical Soil Health &amp; Testing Guide
+  </h1>
+  <p style="opacity: 0.95; font-size: 1.05rem; max-width: 800px; margin-bottom: 1.5rem; line-height: 1.6;">
+    Understand your soil's biological fertility, macro-nutrient balance, and pH reaction. 
+    Prepared in alignment with Indian Council of Agricultural Research (ICAR) and State Agricultural University extension principles.
+  </p>
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="#soil-3d" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">Explore 3D Soil Layers</a>
+    <a href="#nutrients" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.4);">Primary Nutrients (N-P-K)</a>
+    <a href="#soil-ph" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.4);">pH Scale &amp; Availability</a>
+    <a href="#sampling-steps" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.4);">Field Sampling Steps</a>
+  </div>
+</div>
+
+<!-- SECTION 1: Interactive 3D Soil Cross-Section -->
+<section id="soil-3d" class="card" style="margin-bottom: 2rem;">
+  <div class="card-header" style="flex-wrap: wrap; gap: 0.5rem;">
+    <div>
+      <h2 class="card-title">Interactive 3D Soil Cross-Section &amp; Root Architecture</h2>
+      <p class="text-muted" style="font-size: 0.88rem; margin-top: 0.25rem;">
+        Click and drag to rotate the soil profile block. Observe the descending crop root system through different agricultural horizons.
+      </p>
+    </div>
+  </div>
+
+  <!-- Three.js Canvas Container -->
+  <div class="threejs-soil-container" id="threejs-soil-canvas-container">
+    <div class="soil-3d-overlay">
+      <span style="font-weight: 700; color: #81c784;">🔄 3D Orbit View:</span> Drag with mouse or swipe on mobile to rotate
+    </div>
+
+    <div class="soil-3d-legend">
+      <div class="legend-item">
+        <span class="legend-color" style="background: #2e7d32;"></span>
+        <span><strong>O-Horizon:</strong> Organic Matter &amp; Turf</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #4a2e18;"></span>
+        <span><strong>A-Horizon:</strong> Fertile Loam Topsoil (Root Zone)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #7c4a27;"></span>
+        <span><strong>B-Horizon:</strong> Clay &amp; Mineral Subsoil</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #93765b;"></span>
+        <span><strong>C-Horizon:</strong> Weathered Substratum</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- WebGL Disabled Fallback Card -->
+  <div class="threejs-fallback-card" id="webgl-fallback">
+    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">Soil Horizon Cross-Section (Static View)</h3>
+    <p style="color: var(--slate-600); max-width: 600px; margin: 0 auto 1.5rem;">
+      Your browser has hardware acceleration or WebGL disabled. Here is the standard agricultural soil profile:
+    </p>
+    <div style="max-width: 480px; margin: 0 auto; text-align: left; background: white; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--slate-200);">
+      <div style="padding: 0.5rem; background: #2e7d32; color: white; border-radius: 4px; margin-bottom: 4px; font-size: 0.85rem;"><strong>O-Horizon (0–5 cm):</strong> Organic litter, crop residue, surface earthworm activity.</div>
+      <div style="padding: 0.75rem; background: #4a2e18; color: white; border-radius: 4px; margin-bottom: 4px; font-size: 0.85rem;"><strong>A-Horizon Topsoil (5–20 cm):</strong> Primary rooting zone, active biological respiration, available N-P-K.</div>
+      <div style="padding: 0.75rem; background: #7c4a27; color: white; border-radius: 4px; margin-bottom: 4px; font-size: 0.85rem;"><strong>B-Horizon Subsoil (20–50 cm):</strong> Leached minerals, clay accumulation, moisture retention bank.</div>
+      <div style="padding: 0.5rem; background: #93765b; color: white; border-radius: 4px; font-size: 0.85rem;"><strong>C-Horizon Substratum (50+ cm):</strong> Partially weathered bedrock and parent geological material.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: Primary Nutrients (N-P-K) -->
+<section id="nutrients" class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Essential Soil Macro-Nutrients (N-P-K)</h2>
+      <p class="text-muted" style="font-size: 0.88rem; margin-top: 0.25rem;">
+        The three major macronutrients that govern crop vegetative growth, reproductive vigor, and grain yield.
+      </p>
+    </div>
+  </div>
+
+  <div class="nutrient-cards-grid">
+    <!-- Nitrogen Card -->
+    <div class="nutrient-card">
+      <div class="nutrient-badge" style="background: #2e7d32;">N</div>
+      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.35rem;">Nitrogen (N)</h3>
+      <p style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 0.75rem;">Vegetative Growth &amp; Chlorophyll</p>
+      <p style="font-size: 0.9rem; color: var(--slate-600); line-height: 1.5; margin-bottom: 0.75rem;">
+        Essential for chlorophyll production, rapid shoot emergence, leaf development, and vegetative biomass.
+      </p>
+      <div style="background: #f8faf8; padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.84rem;">
+        <strong>Deficiency Symptoms:</strong> Yellowing (chlorosis) of older lower leaves starting from leaf tips; stunted plant height.
+      </div>
+    </div>
+
+    <!-- Phosphorus Card -->
+    <div class="nutrient-card">
+      <div class="nutrient-badge" style="background: #0284c7;">P</div>
+      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.35rem;">Phosphorus (P)</h3>
+      <p style="font-size: 0.85rem; color: #0284c7; font-weight: 600; margin-bottom: 0.75rem;">Root Establishment &amp; Flowering</p>
+      <p style="font-size: 0.9rem; color: var(--slate-600); line-height: 1.5; margin-bottom: 0.75rem;">
+        Fuels plant cellular energy transfer (ATP), deep root proliferation, early seedling vigor, uniform flowering, and seed set.
+      </p>
+      <div style="background: #f0f9ff; padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.84rem;">
+        <strong>Deficiency Symptoms:</strong> Purplish or dark bronze discoloration along leaf margins; shallow, poorly branched root systems.
+      </div>
+    </div>
+
+    <!-- Potassium Card -->
+    <div class="nutrient-card">
+      <div class="nutrient-badge" style="background: #d97706;">K</div>
+      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.35rem;">Potassium (K)</h3>
+      <p style="font-size: 0.85rem; color: #d97706; font-weight: 600; margin-bottom: 0.75rem;">Stress Tolerance &amp; Crop Quality</p>
+      <p style="font-size: 0.9rem; color: var(--slate-600); line-height: 1.5; margin-bottom: 0.75rem;">
+        Regulates stomatal opening and plant moisture retention. Enhances pest resistance, disease tolerance, lodging resistance, and grain weight.
+      </p>
+      <div style="background: #fffbeb; padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.84rem;">
+        <strong>Deficiency Symptoms:</strong> Marginal leaf scorching and brown necrosis; weak lodging stems and shriveled grains.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: Soil Reaction & pH Scale -->
+<section id="soil-ph" class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Soil pH &amp; Nutrient Availability</h2>
+      <p class="text-muted" style="font-size: 0.88rem; margin-top: 0.25rem;">
+        Soil pH measures active acidity or alkalinity, which directly controls whether nutrients can dissolve into root-available form.
+      </p>
+    </div>
+  </div>
+
+  <div class="ph-meter-wrapper">
+    <div class="ph-meter-bar">
+      <div class="ph-segment ph-acid">
+        Acidic (&lt; 6.0)
+      </div>
+      <div class="ph-segment ph-neutral">
+        Neutral Loam (6.0 – 7.5) Optimal
+      </div>
+      <div class="ph-segment ph-alkali">
+        Alkaline (&gt; 7.5)
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1.25rem;">
+    <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 1rem; border-radius: var(--radius-md);">
+      <h4 style="color: #991b1b; font-size: 0.98rem; font-weight: 700; margin-bottom: 0.25rem;">Acidic Soils (pH &lt; 6.0)</h4>
+      <p style="font-size: 0.86rem; color: var(--slate-700); line-height: 1.45; margin: 0;">
+        Common in high-rainfall zones. Free aluminum and iron fix soluble phosphorus into insoluble minerals. Beneficial bacterial activity declines. Requires agricultural lime (CaCO₃) based on lab tests.
+      </p>
+    </div>
+
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: var(--radius-md);">
+      <h4 style="color: #166534; font-size: 0.98rem; font-weight: 700; margin-bottom: 0.25rem;">Optimal Neutral Range (pH 6.0 – 7.5)</h4>
+      <p style="font-size: 0.86rem; color: var(--slate-700); line-height: 1.45; margin: 0;">
+        The sweet spot for Indian crop agriculture. Maximum solubility and bio-availability of N, P, K, Calcium, and Micronutrients (Zinc, Iron, Boron). Microbial decomposition is at peak efficiency.
+      </p>
+    </div>
+
+    <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 1rem; border-radius: var(--radius-md);">
+      <h4 style="color: #1e40af; font-size: 0.98rem; font-weight: 700; margin-bottom: 0.25rem;">Alkaline / Calcareous Soils (pH &gt; 7.5)</h4>
+      <p style="font-size: 0.86rem; color: var(--slate-700); line-height: 1.45; margin: 0;">
+        Common in arid and semi-arid canal tracts. Excess calcium carbonates lock phosphorus into tricalcium phosphate. Micronutrients (Iron, Zinc) become deficient. May benefit from gypsum and organic green manuring.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: Field Soil Sampling Methodology -->
+<section id="sampling-steps" class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Standard 5-Step Field Soil Sampling Protocol</h2>
+      <p class="text-muted" style="font-size: 0.88rem; margin-top: 0.25rem;">
+        An accurate lab report begins with representative sample collection. Follow these standard agricultural extension steps:
+      </p>
+    </div>
+  </div>
+
+  <div class="sampling-steps-grid">
+    <div class="sampling-card">
+      <div class="sampling-num">01</div>
+      <h4 style="font-size: 1rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.35rem;">V-Shaped Cut</h4>
+      <p style="font-size: 0.86rem; color: var(--slate-600); line-height: 1.45; margin: 0;">
+        Clear surface mulch. Dig a V-shaped hole with a clean spade to plough depth (0–15 cm for field crops, 0–30 cm for deep-rooted fruit orchards).
+      </p>
+    </div>
+
+    <div class="sampling-card">
+      <div class="sampling-num">02</div>
+      <h4 style="font-size: 1rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.35rem;">Uniform Furrow Slice</h4>
+      <p style="font-size: 0.86rem; color: var(--slate-600); line-height: 1.45; margin: 0;">
+        Slice a uniform 2–3 cm thick core of soil from top to bottom along the exposed furrow wall and place it into a clean plastic bucket.
+      </p>
+    </div>
+
+    <div class="sampling-card">
+      <div class="sampling-num">03</div>
+      <h4 style="font-size: 1rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.35rem;">Zig-Zag Sub-Samples</h4>
+      <p style="font-size: 0.86rem; color: var(--slate-600); line-height: 1.45; margin: 0;">
+        Collect 8 to 12 representative sub-samples across the parcel in a zig-zag pattern. Avoid bunds, tree shades, manure piles, or waterlogged channels.
+      </p>
+    </div>
+
+    <div class="sampling-card">
+      <div class="sampling-num">04</div>
+      <h4 style="font-size: 1rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.35rem;">Quartering Reduction</h4>
+      <p style="font-size: 0.86rem; color: var(--slate-600); line-height: 1.45; margin: 0;">
+        Thoroughly mix all cores. Spread in a clean circle, divide into four quadrants, discard opposite quarters, and repeat until ~500 grams remain.
+      </p>
+    </div>
+
+    <div class="sampling-card">
+      <div class="sampling-num">05</div>
+      <h4 style="font-size: 1rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.35rem;">Shade Drying &amp; Bagging</h4>
+      <p style="font-size: 0.86rem; color: var(--slate-600); line-height: 1.45; margin: 0;">
+        Air-dry the composite sample under shade (never bake under direct hot sun or in an oven). Label with Survey Number, farmer name, and phone.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: Scientific Advisory Notice & Portal Action -->
+<section id="advisory" class="card" style="background: linear-gradient(135deg, #f8faf8 0%, #eef6f0 100%); border: 1.5px solid rgba(46, 125, 50, 0.3); margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+    <div style="max-width: 780px;">
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 0.5rem;">
+        🔬 Official Agronomic Advisory Notice
+      </h3>
+      <p style="font-size: 0.92rem; color: var(--slate-700); line-height: 1.55; margin-bottom: 0.5rem;">
+        <strong>Scientific Principle:</strong> General soil nutrient guidelines cannot replace physical laboratory soil testing. Every field plot has distinct texture, cation exchange capacity (CEC), and nutrient reserve baselines.
+      </p>
+      <p style="font-size: 0.9rem; color: var(--slate-600); line-height: 1.5; margin: 0;">
+        Always refer to the certified N-P-K concentrations, organic carbon percentages, and electrical conductivity reported in your official laboratory soil test certificate before applying chemical fertilizers or soil amendments.
+      </p>
+    </div>
+
+    <div>
+      <a href="/farmer" class="btn btn-primary" style="padding: 0.65rem 1.4rem; font-weight: 700; font-size: 0.95rem; white-space: nowrap;">
+        Request Soil Collection Visit &rarr;
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!-- Three.js locally hosted vendor library -->
+<script src="{{ url_for('static', filename='js/vendor/three.min.js') }}"></script>
+<!-- Interactive 3D Soil Profile Visualizer -->
+<script src="{{ url_for('static', filename='js/soil_3d.js') }}"></script>
+{% endblock %}
+

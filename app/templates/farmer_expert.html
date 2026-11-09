@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}Ask an Agricultural Expert — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1050px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">🧑‍🌾 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Agronomist Advisory</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">Ask an Agricultural Expert</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Consult qualified agricultural scientists and extension officers regarding soil health, fertilizers, and crop diagnostics.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="#new-consultation-section" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">+ Ask New Question</a>
+        <a href="/farmer" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.2); color: white;">Farmer Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.5rem; margin-bottom: 2rem; align-items: start;">
+    <!-- Left Column: Consultations List -->
+    <div class="card" style="padding: 1.25rem;">
+      <h3 style="margin: 0 0 1rem 0; color: var(--color-forest-green); font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center;">
+        <span>My Queries</span>
+        <span id="consultation-count" class="badge badge-approved">0</span>
+      </h3>
+
+      <div id="consultations-loading" style="text-align: center; padding: 1.5rem; color: var(--color-text-muted);">
+        <span class="spinner" style="border-top-color: var(--primary);"></span> Loading queries...
+      </div>
+
+      <div id="consultations-empty" class="empty-state" style="display: none; padding: 1.5rem 0.5rem;">
+        <div class="empty-state-icon" style="font-size: 2rem;">💬</div>
+        <h4 style="margin: 0.5rem 0 0.25rem 0;">No questions asked yet</h4>
+        <p style="font-size: 0.85rem;">Submit your first query using the form below.</p>
+      </div>
+
+      <div id="consultations-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <!-- Query snippets populated by JS -->
+      </div>
+    </div>
+
+    <!-- Right Column: Active Thread Viewer -->
+    <div class="card" id="thread-viewer-card" style="padding: 1.5rem;">
+      <div id="thread-placeholder" style="text-align: center; padding: 3rem 1rem; color: var(--color-text-muted);">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📬</div>
+        <h4>Select a query to read the conversation</h4>
+        <p style="font-size: 0.9rem;">Click on any query from your list on the left to see the agronomic response.</p>
+      </div>
+
+      <div id="thread-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+          <div>
+            <span id="thread-category" class="badge badge-approved" style="font-size: 0.8rem; margin-bottom: 0.3rem;"></span>
+            <h3 id="thread-subject" style="margin: 0; color: var(--color-forest-green); font-size: 1.2rem;"></h3>
+            <span id="thread-meta" style="font-size: 0.82rem; color: var(--color-text-muted);"></span>
+          </div>
+          <span id="thread-status" class="badge" style="font-size: 0.85rem;"></span>
+        </div>
+
+        <!-- Messages Thread Box -->
+        <div id="thread-messages" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto; padding: 0.5rem 0.25rem; margin-bottom: 1.25rem;">
+          <!-- Messages -->
+        </div>
+
+        <!-- Reply Form -->
+        <form id="thread-reply-form" style="border-top: 1px solid var(--color-border); padding-top: 1rem;">
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <textarea id="reply-text" class="form-control" rows="2" placeholder="Type your follow-up question here..." required></textarea>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" id="btn-close-query" class="btn btn-secondary btn-sm" style="color: var(--color-text-muted);">Mark as Resolved</button>
+            <button type="submit" id="btn-send-reply" class="btn btn-primary btn-sm">Send Reply</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit New Query Form -->
+  <section id="new-consultation-section" class="card" style="padding: 1.75rem;">
+    <h3 style="margin-top: 0; margin-bottom: 0.5rem; color: var(--color-forest-green);">➕ Ask an Agricultural Expert</h3>
+    <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+      Have a specific crop issue, deficiency symptom, or soil test question? Our agricultural specialists will reply directly with scientific recommendations.
+    </p>
+
+    <form id="new-consultation-form" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="consult-subject" class="form-label">Query Subject <span class="required">*</span></label>
+          <input type="text" id="consult-subject" name="subject" class="form-control" placeholder="e.g. Yellow leaf tips in tillering paddy" required maxlength="200">
+        </div>
+        <div class="form-group">
+          <label for="consult-category" class="form-label">Advisory Category <span class="required">*</span></label>
+          <select id="consult-category" name="category" class="form-control" required>
+            <option value="Fertilizer Application" selected>Fertilizer Application &amp; Nutrient Dosage</option>
+            <option value="Soil Health">Soil Health &amp; Salinity Correction</option>
+            <option value="Crop Recommendation">Crop &amp; Variety Recommendation</option>
+            <option value="Pest Control">Pest, Fungus &amp; Disease Diagnosis</option>
+            <option value="Irrigation">Irrigation &amp; Water Management</option>
+            <option value="General Advice">General Agricultural Practice</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label for="consult-question" class="form-label">Detailed Question &amp; Observations <span class="required">*</span></label>
+        <textarea id="consult-question" name="question_text" class="form-control" rows="4" placeholder="Describe the plot conditions, crop variety, sowing date, fertilizers applied, and visible symptoms in detail..." required></textarea>
+      </div>
+
+      <button type="submit" id="btn-submit-consult" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+        Submit Query to Expert
+      </button>
+    </form>
+  </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const listEl = document.getElementById('consultations-list');
+  const countEl = document.getElementById('consultation-count');
+  const loadingEl = document.getElementById('consultations-loading');
+  const emptyEl = document.getElementById('consultations-empty');
+
+  const placeholderEl = document.getElementById('thread-placeholder');
+  const contentEl = document.getElementById('thread-content');
+  const threadSubject = document.getElementById('thread-subject');
+  const threadCategory = document.getElementById('thread-category');
+  const threadMeta = document.getElementById('thread-meta');
+  const threadStatus = document.getElementById('thread-status');
+  const threadMessages = document.getElementById('thread-messages');
+  const replyForm = document.getElementById('thread-reply-form');
+  const replyText = document.getElementById('reply-text');
+  const btnCloseQuery = document.getElementById('btn-close-query');
+
+  const newForm = document.getElementById('new-consultation-form');
+  const submitBtn = document.getElementById('btn-submit-consult');
+
+  let activeConsultationId = null;
+
+  async function loadConsultations() {
+    loadingEl.style.display = 'block';
+    emptyEl.style.display = 'none';
+
+    try {
+      const res = await API.get('/api/consultations');
+      const items = res.consultations || [];
+      loadingEl.style.display = 'none';
+      countEl.textContent = items.length;
+
+      if (items.length === 0) {
+        emptyEl.style.display = 'block';
+        listEl.innerHTML = '';
+        return;
+      }
+
+      listEl.innerHTML = '';
+      items.forEach(c => {
+        const item = document.createElement('div');
+        item.style.padding = '0.75rem 1rem';
+        item.style.borderRadius = '6px';
+        item.style.border = c.id === activeConsultationId ? '2px solid var(--color-primary-green)' : '1px solid var(--color-border)';
+        item.style.background = c.id === activeConsultationId ? 'var(--color-bg-light)' : '#ffffff';
+        item.style.cursor = 'pointer';
+
+        let statusClass = 'badge-approved';
+        if (c.status === 'OPEN') statusClass = 'badge-pending';
+        else if (c.status === 'IN_REVIEW') statusClass = 'badge-pending';
+
+        item.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <span style="font-size: 0.78rem; color: var(--color-text-muted);">${escapeHtml(c.category)}</span>
+            <span class="badge ${statusClass}" style="font-size: 0.75rem;">${escapeHtml(c.status)}</span>
+          </div>
+          <div style="font-weight: 600; color: var(--color-forest-green); font-size: 0.95rem; margin-bottom: 0.25rem;">${escapeHtml(c.subject)}</div>
+          <div style="font-size: 0.8rem; color: var(--color-text-muted);">${escapeHtml(c.created_at)}</div>
+        `;
+
+        item.addEventListener('click', () => loadThread(c.id));
+        listEl.appendChild(item);
+      });
+    } catch (err) {
+      loadingEl.style.display = 'none';
+      window.showAlert(err.message || 'Error loading consultations.', 'error');
+    }
+  }
+
+  async function loadThread(id) {
+    activeConsultationId = id;
+    try {
+      const res = await API.get(`/api/consultations/${id}`);
+      const c = res.consultation;
+      const msgs = res.messages || [];
+
+      placeholderEl.style.display = 'none';
+      contentEl.style.display = 'block';
+
+      threadSubject.textContent = c.subject;
+      threadCategory.textContent = c.category;
+      threadMeta.textContent = `Submitted: ${c.created_at} ${c.advisor_name ? '• Assigned: ' + c.advisor_name : ''}`;
+      threadStatus.textContent = c.status;
+      threadStatus.className = 'badge ' + (c.status === 'ANSWERED' ? 'badge-approved' : 'badge-pending');
+
+      threadMessages.innerHTML = '';
+      msgs.forEach(m => {
+        const bubble = document.createElement('div');
+        const isExpert = m.sender_role === 'advisor' || m.sender_role === 'admin';
+        bubble.style.alignSelf = isExpert ? 'flex-start' : 'flex-end';
+        bubble.style.maxWidth = '85%';
+        bubble.style.background = isExpert ? '#e8f5e9' : '#e3f2fd';
+        bubble.style.border = isExpert ? '1px solid #c8e6c9' : '1px solid #bbdefb';
+        bubble.style.borderRadius = '8px';
+        bubble.style.padding = '0.75rem 1rem';
+
+        bubble.innerHTML = `
+          <div style="font-size: 0.8rem; font-weight: 700; color: ${isExpert ? 'var(--color-forest-green)' : '#1565c0'}; margin-bottom: 0.25rem;">
+            ${isExpert ? '👨‍🔬 ' + escapeHtml(m.sender_name) + ' (Expert)' : '🧑‍🌾 You (' + escapeHtml(m.sender_name) + ')'}
+          </div>
+          <div style="font-size: 0.92rem; line-height: 1.45; color: var(--color-text-main);">${escapeHtml(m.message_text)}</div>
+          <div style="font-size: 0.75rem; color: var(--color-text-muted); text-align: right; margin-top: 0.3rem;">${escapeHtml(m.created_at)}</div>
+        `;
+        threadMessages.appendChild(bubble);
+      });
+
+      threadMessages.scrollTop = threadMessages.scrollHeight;
+      loadConsultations();
+    } catch (err) {
+      window.showAlert(err.message || 'Error loading thread.', 'error');
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  // Reply submission
+  replyForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = replyText.value.trim();
+    if (!text || !activeConsultationId) return;
+
+    try {
+      await API.post(`/api/consultations/${activeConsultationId}/messages`, { message_text: text });
+      replyText.value = '';
+      loadThread(activeConsultationId);
+    } catch (err) {
+      window.showAlert(err.message || 'Failed to post reply.', 'error');
+    }
+  });
+
+  // Close query
+  btnCloseQuery.addEventListener('click', async () => {
+    if (!activeConsultationId) return;
+    if (!confirm('Mark this query as answered and closed?')) return;
+    try {
+      await API.post(`/api/consultations/${activeConsultationId}/close`, {});
+      window.showAlert('Query closed.', 'success');
+      loadThread(activeConsultationId);
+    } catch (err) {
+      window.showAlert(err.message || 'Could not close query.', 'error');
+    }
+  });
+
+  // New query submission
+  newForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const subject = document.getElementById('consult-subject').value.trim();
+    const category = document.getElementById('consult-category').value;
+    const question_text = document.getElementById('consult-question').value.trim();
+
+    if (!subject || !question_text) {
+      window.showAlert('Please fill in both subject and question description.', 'error');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+      const res = await API.post('/api/consultations', { subject, category, question_text });
+      window.showAlert('Query submitted to agricultural expert team!', 'success');
+      newForm.reset();
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Query to Expert';
+      loadConsultations();
+      loadThread(res.consultation_id);
+    } catch (err) {
+      window.showAlert(err.message || 'Failed to submit query.', 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Query to Expert';
+    }
+  });
+
+  loadConsultations();
+});
+</script>
+{% endblock %}
+

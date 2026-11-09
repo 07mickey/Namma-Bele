@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}Operator Desk — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">🎧 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Call Center &amp; Operations</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">Operator Service Desk</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Assisted farmer onboarding, duplicate prevention, and telephony/in-person booking.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="#register-farmer-card" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">+ New Assisted Farmer</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Lookup Section -->
+  <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+    <h3 style="margin-top: 0; color: var(--color-forest-green); margin-bottom: 0.75rem;">🔍 Farmer Directory &amp; Lookup</h3>
+    <p style="font-size: 0.88rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+      Search by phone number or name before creating a new record to avoid duplicate accounts.
+    </p>
+
+    <form id="search-farmer-form" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+      <input type="text" id="search-query" class="form-control" placeholder="Search by phone number (e.g. 9876543210) or farmer name..." style="flex: 1; min-width: 250px;">
+      <button type="submit" class="btn btn-primary" id="btn-search-farmer">Search Farmer</button>
+    </form>
+
+    <div id="search-results-box" style="display: none;">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Farmer Name</th>
+              <th>Phone Number</th>
+              <th>Status</th>
+              <th>Plots &amp; Address</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="search-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; align-items: start;">
+    <!-- Assisted Registration Card -->
+    <div class="card" id="register-farmer-card" style="padding: 1.5rem;">
+      <h3 style="margin-top: 0; color: var(--color-forest-green); margin-bottom: 0.5rem;">👤 Register Assisted Farmer</h3>
+      <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+        Creates account with status <strong>UNCLAIMED</strong>. The farmer does not need a web password.
+      </p>
+
+      <form id="form-assisted-farmer" novalidate>
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <label class="form-label">Farmer Full Name <span class="required">*</span></label>
+          <input type="text" id="asst-name" class="form-control" placeholder="e.g. Siddaramaiah Gowda" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label">Mobile Number (E.164) <span class="required">*</span></label>
+            <input type="tel" id="asst-phone" class="form-control" placeholder="+919876543210" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label">Language Preference</label>
+            <select id="asst-lang" class="form-control">
+              <option value="kn" selected>Kannada (ಕನ್ನಡ)</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="background: var(--color-bg-light); padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem;">
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--color-forest-green); margin-bottom: 0.4rem;">Home Delivery Address (Optional)</div>
+          <div class="form-row">
+            <input type="text" id="asst-village" class="form-control" placeholder="Village / Post" style="margin-bottom: 0.4rem;">
+            <input type="text" id="asst-taluk" class="form-control" placeholder="Taluk (e.g. Maddur)" style="margin-bottom: 0.4rem;">
+          </div>
+          <div class="form-row">
+            <input type="text" id="asst-district" class="form-control" placeholder="District (e.g. Mandya)" value="Mandya">
+            <input type="text" id="asst-pincode" class="form-control" placeholder="PIN Code" maxlength="6">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-save-assisted" style="width: 100%;">
+          Create Farmer Account (Unclaimed)
+        </button>
+      </form>
+    </div>
+
+    <!-- Assisted Booking Card -->
+    <div class="card" id="assisted-booking-card" style="padding: 1.5rem;">
+      <h3 style="margin-top: 0; color: var(--color-forest-green); margin-bottom: 0.5rem;">📅 Book Assisted Appointment</h3>
+      <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+        Schedules a soil testing visit on behalf of a registered farmer.
+      </p>
+
+      <form id="form-assisted-booking" novalidate>
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <label class="form-label">Farmer ID or Phone <span class="required">*</span></label>
+          <input type="number" id="book-farmer-id" class="form-control" placeholder="Selected Farmer ID" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label">Preferred Date <span class="required">*</span></label>
+            <input type="date" id="book-date" class="form-control" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label">Time Slot <span class="required">*</span></label>
+            <select id="book-slot" class="form-control" required>
+              <option value="09:00-12:00">09:00 - 12:00 (Morning)</option>
+              <option value="14:00-17:00">14:00 - 17:00 (Afternoon)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <label class="form-label">Land &amp; Survey Details</label>
+          <input type="text" id="book-land" class="form-control" placeholder="e.g. 4 acres paddy, Survey #88">
+        </div>
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <label class="form-label">Farm Location Address</label>
+          <input type="text" id="book-addr" class="form-control" placeholder="e.g. Village Green, Maddur">
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-save-booking" style="width: 100%;">
+          Confirm &amp; Schedule Soil Test
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Recent Operator Audit Logs -->
+  <div class="card" style="padding: 1.5rem;">
+    <h3 style="margin-top: 0; color: var(--color-forest-green); margin-bottom: 1rem;">📋 Service Operator Audit Logs</h3>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Operator</th>
+            <th>Action</th>
+            <th>Target Type</th>
+            <th>Target ID</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody id="audit-tbody">
+          <tr><td colspan="6" style="text-align: center; padding: 1.5rem; color: var(--color-text-muted);">Loading audit events...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const searchForm = document.getElementById('search-farmer-form');
+  const searchInput = document.getElementById('search-query');
+  const searchBox = document.getElementById('search-results-box');
+  const searchTbody = document.getElementById('search-tbody');
+
+  const asstForm = document.getElementById('form-assisted-farmer');
+  const bookForm = document.getElementById('form-assisted-booking');
+  const bookFarmerIdInput = document.getElementById('book-farmer-id');
+  const bookDateInput = document.getElementById('book-date');
+  const auditTbody = document.getElementById('audit-tbody');
+
+  // Set default book date 2 days in future
+  const d = new Date();
+  d.setDate(d.getDate() + 2);
+  bookDateInput.value = d.toISOString().split('T')[0];
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  // Farmer Search
+  searchForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const q = searchInput.value.trim();
+    if (!q) return;
+
+    try {
+      const res = await API.get(`/api/operator/farmers/search?q=${encodeURIComponent(q)}`);
+      const farmers = res.farmers || [];
+      searchBox.style.display = 'block';
+
+      if (farmers.length === 0) {
+        searchTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted);">No matching farmer accounts found. You can register them below.</td></tr>';
+        return;
+      }
+
+      searchTbody.innerHTML = '';
+      farmers.forEach(f => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>#${f.id}</strong></td>
+          <td><strong>${escapeHtml(f.name)}</strong></td>
+          <td>${escapeHtml(f.phone)}</td>
+          <td><span class="badge ${f.account_status === 'ACTIVE' ? 'badge-approved' : 'badge-pending'}">${escapeHtml(f.account_status)}</span></td>
+          <td>
+            <small style="color: var(--color-text-muted);">
+              Plots: ${f.plots ? f.plots.length : 0} | 
+              ${f.default_address ? escapeHtml(f.default_address.district) : 'No address'}
+            </small>
+          </td>
+          <td>
+            <button class="btn btn-secondary btn-sm btn-select-farmer" data-id="${f.id}" data-name="${escapeHtml(f.name)}">Book For Farmer</button>
+          </td>
+        `;
+        searchTbody.appendChild(tr);
+      });
+
+      document.querySelectorAll('.btn-select-farmer').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          bookFarmerIdInput.value = e.target.dataset.id;
+          window.showAlert(`Farmer #${e.target.dataset.id} (${e.target.dataset.name}) selected for booking.`, 'info');
+          document.getElementById('assisted-booking-card').scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+    } catch (err) {
+      window.showAlert(err.message || 'Error searching farmers.', 'error');
+    }
+  });
+
+  // Assisted Registration
+  asstForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('asst-name').value.trim();
+    let phone = document.getElementById('asst-phone').value.trim();
+    const preferred_language = document.getElementById('asst-lang').value;
+    const village = document.getElementById('asst-village').value.trim();
+    const taluk = document.getElementById('asst-taluk').value.trim();
+    const district = document.getElementById('asst-district').value.trim();
+    const pincode = document.getElementById('asst-pincode').value.trim();
+
+    if (!name || !phone) {
+      window.showAlert('Farmer name and phone are required.', 'error');
+      return;
+    }
+    if (/^\d{10}$/.test(phone)) phone = '+91' + phone;
+
+    const payload = {
+      name,
+      phone,
+      preferred_language,
+    };
+    if (village && taluk) {
+      payload.address = {
+        recipient_name: name,
+        recipient_phone: phone,
+        street_or_village: village,
+        taluk,
+        district: district || 'Mandya',
+        pincode: pincode || '571401',
+      };
+    }
+
+    try {
+      const res = await API.post('/api/operator/farmers', payload);
+      window.showAlert(`Farmer #${res.farmer.id} registered successfully (UNCLAIMED)!`, 'success');
+      bookFarmerIdInput.value = res.farmer.id;
+      asstForm.reset();
+      loadAuditLogs();
+    } catch (err) {
+      window.showAlert(err.message || 'Error registering farmer.', 'error');
+    }
+  });
+
+  // Assisted Booking
+  bookForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const farmer_id = parseInt(bookFarmerIdInput.value);
+    const preferred_date = bookDateInput.value;
+    const preferred_time = document.getElementById('book-slot').value;
+    const land_details = document.getElementById('book-land').value.trim();
+    const address = document.getElementById('book-addr').value.trim();
+
+    if (!farmer_id || !preferred_date) {
+      window.showAlert('Farmer ID and Date are required.', 'error');
+      return;
+    }
+
+    try {
+      const res = await API.post('/api/operator/appointments', {
+        farmer_id,
+        preferred_date,
+        preferred_time,
+        land_details,
+        address,
+      });
+      window.showAlert(`Appointment #${res.appointment_id} scheduled and confirmed (Sample: ${res.sample_code})!`, 'success');
+      bookForm.reset();
+      loadAuditLogs();
+    } catch (err) {
+      window.showAlert(err.message || 'Error booking appointment.', 'error');
+    }
+  });
+
+  async function loadAuditLogs() {
+    try {
+      const res = await API.get('/api/operator/audit-logs');
+      const logs = res.logs || [];
+      if (logs.length === 0) {
+        auditTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted);">No operator actions recorded yet.</td></tr>';
+        return;
+      }
+
+      auditTbody.innerHTML = '';
+      logs.slice(0, 15).forEach(l => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><small>${escapeHtml(l.created_at)}</small></td>
+          <td><strong>${escapeHtml(l.actor_name || 'Operator')}</strong> (${escapeHtml(l.actor_role)})</td>
+          <td><span class="badge badge-approved" style="font-size: 0.78rem;">${escapeHtml(l.action)}</span></td>
+          <td>${escapeHtml(l.target_entity_type)}</td>
+          <td>#${l.target_entity_id}</td>
+          <td><small>${escapeHtml(l.ip_address)}</small></td>
+        `;
+        auditTbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  loadAuditLogs();
+});
+</script>
+{% endblock %}
+

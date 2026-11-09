@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Physical Report Dispatch Queue — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">📬 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Speed Post Logistics</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">Physical Soil Health Card Dispatch</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Print queue, barcode labeling, Speed Post consignment tracking, and delivery receipts.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="/admin/tracking" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">Sample Tracking Pipeline</a>
+        <a href="/admin" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.2); color: white;">Admin Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+      <h3 style="margin: 0; color: var(--color-forest-green);">Postal Dispatch Queue</h3>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <label for="filter-dispatch-status" style="font-size: 0.88rem; font-weight: 600;">Dispatch Status:</label>
+        <select id="filter-dispatch-status" class="form-control" style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.88rem;">
+          <option value="">All Statuses</option>
+          <option value="Queued" selected>Queued (Needs Printing)</option>
+          <option value="Printed">Printed (Ready to Dispatch)</option>
+          <option value="Dispatched">Dispatched (In Postal Transit)</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Dispatch ID</th>
+            <th>Farmer &amp; Sample</th>
+            <th>Postal Delivery Address (Immutable Snapshot)</th>
+            <th>Courier &amp; Consignment #</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="dispatch-tbody">
+          <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">Loading postal dispatch queue...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Dispatch with Speed Post Tracking Number -->
+<div id="modal-dispatch-tracking" class="modal-backdrop" style="display: none;">
+  <div class="modal-dialog" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3 class="modal-title">📮 Enter Postal Consignment Details</h3>
+      <button type="button" class="modal-close" id="btn-close-dispatch-modal">&times;</button>
+    </div>
+    <form id="form-record-dispatch" style="padding: 1.25rem;">
+      <input type="hidden" id="dispatch-item-id">
+
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label class="form-label">Courier Service <span class="required">*</span></label>
+        <input type="text" id="dispatch-courier" class="form-control" value="India Post Speed Post" required>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label class="form-label">Consignment Tracking Number (Barcode) <span class="required">*</span></label>
+        <input type="text" id="dispatch-tracking-no" class="form-control" placeholder="e.g. EK123456789IN" required style="letter-spacing: 1px; font-weight: 700;">
+        <small style="color: var(--color-text-muted);">Standard 13-character India Post consignment tracking ID (e.g. EK123456789IN). Enter verified postal receipt barcode.</small>
+        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0.4rem 0 0 0;">Note: Entering the receipt barcode registers physical dispatch within the portal. External in-transit shipment tracking is tracked via India Post national tracking servers.</p>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-dispatch">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-confirm-dispatch">Confirm Consignment Dispatch</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const tbody = document.getElementById('dispatch-tbody');
+  const filterSelect = document.getElementById('filter-dispatch-status');
+  const modal = document.getElementById('modal-dispatch-tracking');
+  const form = document.getElementById('form-record-dispatch');
+  const dispatchIdInput = document.getElementById('dispatch-item-id');
+  const courierInput = document.getElementById('dispatch-courier');
+  const trackingInput = document.getElementById('dispatch-tracking-no');
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  async function loadQueue() {
+    try {
+      const status = filterSelect.value;
+      const url = status ? `/api/dispatch/queue?status=${status}` : '/api/dispatch/queue';
+      const res = await API.get(url);
+      const items = res.queue || [];
+
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">No reports currently in this dispatch queue.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      items.forEach(d => {
+        const tr = document.createElement('tr');
+
+        let addrHtml = '—';
+        if (d.address && typeof d.address === 'object') {
+          addrHtml = `
+            <strong>${escapeHtml(d.address.recipient_name || d.recipient_name)}</strong> (📞 ${escapeHtml(d.address.recipient_phone || d.recipient_phone)})<br>
+            ${escapeHtml(d.address.house_details || '')}, ${escapeHtml(d.address.street_or_village || '')}<br>
+            ${escapeHtml(d.address.taluk || '')}, ${escapeHtml(d.address.district || '')} – <strong>${escapeHtml(d.address.pincode || '')}</strong>
+          `;
+        } else {
+          addrHtml = `${escapeHtml(d.recipient_name)} (📞 ${escapeHtml(d.recipient_phone)})`;
+        }
+
+        let trackingHtml = '<span style="color: var(--color-text-muted); font-size: 0.85rem;">Pending Dispatch</span>';
+        if (d.tracking_number) {
+          trackingHtml = `
+            <strong style="color: var(--color-primary-green); font-family: monospace;">${escapeHtml(d.tracking_number)}</strong><br>
+            <small style="color: var(--color-text-muted);">${escapeHtml(d.courier_service)}</small>
+          `;
+        }
+
+        let actionsHtml = '';
+        if (d.dispatch_status === 'Queued') {
+          actionsHtml = `<button class="btn btn-primary btn-sm btn-mark-print" data-id="${d.dispatch_id}">Mark as Printed</button>`;
+        } else if (d.dispatch_status === 'Printed') {
+          actionsHtml = `<button class="btn btn-primary btn-sm btn-open-dispatch" data-id="${d.dispatch_id}">Dispatch Speed Post</button>`;
+        } else if (d.dispatch_status === 'Dispatched') {
+          actionsHtml = `<button class="btn btn-secondary btn-sm btn-mark-deliver" data-id="${d.dispatch_id}">Confirm Delivered</button>`;
+        } else {
+          actionsHtml = `<span style="color: var(--color-primary-green); font-weight: 700;">✓ Delivered</span>`;
+        }
+
+        tr.innerHTML = `
+          <td><strong>#${d.dispatch_id}</strong></td>
+          <td>
+            <strong>${escapeHtml(d.farmer_name)}</strong><br>
+            <code style="color: var(--color-forest-green); font-weight: 700;">${escapeHtml(d.sample_code || 'SMP')}</code>
+          </td>
+          <td><div style="font-size: 0.88rem; line-height: 1.4;">${addrHtml}</div></td>
+          <td>${trackingHtml}</td>
+          <td><span class="badge ${d.dispatch_status === 'Delivered' ? 'badge-approved' : 'badge-pending'}">${escapeHtml(d.dispatch_status)}</span></td>
+          <td>${actionsHtml}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      // Bind buttons
+      document.querySelectorAll('.btn-mark-print').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          try {
+            await API.post(`/api/dispatch/${btn.dataset.id}/print`, {});
+            window.showAlert('Soil Health Card marked as printed and barcoded.', 'success');
+            loadQueue();
+          } catch (err) {
+            window.showAlert(err.message || 'Error updating print status.', 'error');
+          }
+        });
+      });
+
+      document.querySelectorAll('.btn-open-dispatch').forEach(btn => {
+        btn.addEventListener('click', () => {
+          dispatchIdInput.value = btn.dataset.id;
+          trackingInput.value = '';
+          modal.style.display = 'flex';
+        });
+      });
+
+      document.querySelectorAll('.btn-mark-deliver').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Confirm successful postal delivery of this Soil Health Card?')) return;
+          try {
+            await API.post(`/api/dispatch/${btn.dataset.id}/deliver`, {});
+            window.showAlert('Postal delivery confirmed! Stage 13 completed.', 'success');
+            loadQueue();
+          } catch (err) {
+            window.showAlert(err.message || 'Error confirming delivery.', 'error');
+          }
+        });
+      });
+    } catch (err) {
+      window.showAlert(err.message || 'Error loading dispatch queue.', 'error');
+    }
+  }
+
+  filterSelect.addEventListener('change', loadQueue);
+  document.getElementById('btn-close-dispatch-modal').addEventListener('click', () => modal.style.display = 'none');
+  document.getElementById('btn-cancel-dispatch').addEventListener('click', () => modal.style.display = 'none');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = dispatchIdInput.value;
+    const courier_service = courierInput.value.trim();
+    const tracking_number = trackingInput.value.trim();
+
+    if (!tracking_number) {
+      window.showAlert('Please enter the Speed Post tracking number.', 'error');
+      return;
+    }
+
+    try {
+      await API.post(`/api/dispatch/${id}/dispatch`, {
+        courier_service,
+        tracking_number,
+      });
+
+      window.showAlert(`Consignment ${tracking_number} dispatched!`, 'success');
+      modal.style.display = 'none';
+      loadQueue();
+    } catch (err) {
+      window.showAlert(err.message || 'Error recording dispatch.', 'error');
+    }
+  });
+
+  loadQueue();
+});
+</script>
+{% endblock %}
+

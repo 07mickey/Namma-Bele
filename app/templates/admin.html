@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Management Portal — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="admin-hero">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div class="portal-brand-header">
+      <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+      <div>
+        <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.35rem;">🌱 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Operations</span>
+        <h1 style="display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.25rem 0;">
+          <span>Administrator Dashboard</span>
+        </h1>
+        <p style="margin: 0; opacity: 0.95;">Manage community soil sample appointments, update status workflows, and upload official lab PDF reports.</p>
+      </div>
+    </div>
+    <div class="admin-badge-user">
+      Logged in as: <strong id="admin-user-info">Admin</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Quick Navigation Bar -->
+<div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1.5rem; background: var(--color-bg-light); border: 1px solid var(--color-border);">
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+    <a href="/admin" class="btn btn-secondary btn-sm" style="background: white;">📋 Appointments Queue</a>
+    <a href="/admin/tracking" class="btn btn-secondary btn-sm" style="background: white;">🛰️ 13-Stage Tracking</a>
+    <a href="/admin/dispatch" class="btn btn-secondary btn-sm" style="background: white;">📬 Postal Dispatch Queue</a>
+    <a href="/advisor" class="btn btn-secondary btn-sm" style="background: white;">🧑‍🔬 Expert Consultations</a>
+    <a href="/lab" class="btn btn-secondary btn-sm" style="background: white;">🧪 Lab Workspace</a>
+    <a href="/operator" class="btn btn-secondary btn-sm" style="background: white;">🎧 Operator Desk</a>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<section class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-title">Total Bookings</span>
+    <span class="stat-value" id="admin-stat-total">0</span>
+  </div>
+  <div class="stat-card stat-pending">
+    <span class="stat-title">Pending</span>
+    <span class="stat-value" id="admin-stat-pending">0</span>
+  </div>
+  <div class="stat-card stat-approved">
+    <span class="stat-title">Approved</span>
+    <span class="stat-value" id="admin-stat-approved">0</span>
+  </div>
+  <div class="stat-card stat-rejected">
+    <span class="stat-title">Rejected</span>
+    <span class="stat-value" id="admin-stat-rejected">0</span>
+  </div>
+  <div class="stat-card stat-completed">
+    <span class="stat-title">Completed</span>
+    <span class="stat-value" id="admin-stat-completed">0</span>
+  </div>
+  <div class="stat-card" style="border-left: 4px solid var(--primary);">
+    <span class="stat-title">Reports Uploaded</span>
+    <span class="stat-value" id="admin-stat-reports" style="color: var(--primary);">0</span>
+  </div>
+</section>
+
+<!-- Appointment Queue Management -->
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">Appointment Queue</h2>
+    <button id="btn-admin-refresh" class="btn btn-secondary btn-sm" type="button">Refresh Queue</button>
+  </div>
+
+  <!-- Status Filter Bar -->
+  <div class="filter-bar" id="status-filter-bar">
+    <span style="font-size: 0.9rem; font-weight: 600; color: var(--slate-600); margin-right: 0.25rem;">Filter:</span>
+    <button type="button" class="filter-btn active" data-status="">All</button>
+    <button type="button" class="filter-btn" data-status="Pending">Pending</button>
+    <button type="button" class="filter-btn" data-status="Approved">Approved</button>
+    <button type="button" class="filter-btn" data-status="Rejected">Rejected</button>
+    <button type="button" class="filter-btn" data-status="Completed">Completed</button>
+  </div>
+
+  <!-- Search Field (Page-Scoped) -->
+  <div class="admin-search-wrapper" id="admin-search-container">
+    <div class="admin-search-row">
+      <div class="search-input-box">
+        <input 
+          type="text" 
+          id="admin-search-input" 
+          class="form-control" 
+          placeholder="Search by ID, farmer name, phone, land, or address..."
+          aria-label="Search appointments on currently loaded page"
+          autocomplete="off"
+        >
+      </div>
+      <button type="button" id="btn-clear-search" class="btn btn-secondary btn-sm" style="display: none;" aria-label="Clear search input">Clear</button>
+    </div>
+    <div class="admin-search-notice" id="admin-search-notice">
+      <span>ℹ️</span>
+      <span id="admin-search-scope-text">Search filters the appointments loaded on the current page.</span>
+    </div>
+  </div>
+
+  <!-- Queue Table -->
+  <div id="admin-loading" style="text-align: center; padding: 2rem; color: var(--slate-600);">
+    <span class="spinner" style="border-top-color: var(--primary);"></span> Loading appointment queue...
+  </div>
+
+  <div id="admin-empty" class="empty-state" style="display: none;">
+    <div class="empty-state-icon">📋</div>
+    <h3 class="empty-state-title">No appointments found</h3>
+    <p id="admin-empty-msg">No appointments match the selected filter criteria.</p>
+  </div>
+
+  <div class="table-responsive" id="admin-table-container" style="display: none;">
+    <table class="table" id="admin-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Farmer Name & Phone</th>
+          <th>Visit Date & Time</th>
+          <th>Land & Location</th>
+          <th>Status</th>
+          <th>Report Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="admin-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Bar -->
+  <div class="pagination-bar" id="admin-pagination" style="display: none;">
+    <div style="font-size: 0.9rem; color: var(--slate-600);" id="pagination-info">
+      Showing page 1 of 1 (0 total)
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="button" id="btn-prev-page" class="btn btn-secondary btn-sm" disabled>&larr; Previous</button>
+      <button type="button" id="btn-next-page" class="btn btn-secondary btn-sm" disabled>Next &rarr;</button>
+    </div>
+  </div>
+</section>
+
+<!-- Appointment Action & Report Upload Modal -->
+<div id="admin-modal" class="modal-backdrop" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title" id="admin-modal-title">Appointment Details</h3>
+      <button type="button" class="modal-close" id="admin-modal-close">&times;</button>
+    </div>
+    <div class="modal-body" id="admin-modal-body">
+      <!-- Dynamic Details Filled by JS -->
+    </div>
+    <div class="modal-footer" id="admin-modal-footer">
+      <button type="button" class="btn btn-secondary" id="admin-modal-cancel">Close</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}
+

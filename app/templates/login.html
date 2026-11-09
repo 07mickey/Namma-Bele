@@ -1,0 +1,539 @@
+{% extends "base.html" %}
+
+{% block title %}Login — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="login-page-wrapper {% if config.DEMO_MODE %}demo-layout-active{% endif %}">
+  <div class="login-container-card">
+    <!-- Dual Login Entry Option Tabs -->
+    <div class="login-mode-tabs" role="tablist" aria-label="Portal Login Options">
+      <button type="button" id="tab-farmer-login" class="login-mode-tab active" role="tab" aria-selected="true" aria-controls="login-form">
+        <svg class="login-tab-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.93V17a1 1 0 0 1-2 0v-.07A7.003 7.003 0 0 1 5.07 11H5a1 1 0 0 1 0-2h.07A7.003 7.003 0 0 1 11 3.07V3a1 1 0 0 1 2 0v.07A7.003 7.003 0 0 1 18.93 9H19a1 1 0 0 1 0 2h-.07A7.003 7.003 0 0 1 13 16.93z"/>
+        </svg>
+        <span>Farmer Login</span>
+      </button>
+      <button type="button" id="tab-staff-login" class="login-mode-tab" role="tab" aria-selected="false" aria-controls="login-form">
+        <svg class="login-tab-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+        <span>Staff / Admin Login</span>
+      </button>
+    </div>
+
+    <div class="card login-card-body">
+      <!-- Official Brand Header Block -->
+      <div style="text-align: center; padding-top: 1.25rem; margin-bottom: 0.5rem;">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" style="height: 64px; width: auto; object-fit: contain;">
+        <div style="font-size: 1.15rem; font-weight: 850; color: var(--namma-brown, #3c2115); margin-top: 0.35rem; letter-spacing: 0.03em;">NAMMA BELE</div>
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--namma-terracotta, #af7137);">ನಮ್ಮ ಬೆಳೆ</div>
+      </div>
+
+      <div class="card-header login-header-block">
+        <div class="login-badge-tag" id="login-role-badge">Farmer Portal</div>
+        <h1 class="card-title" id="login-title">Portal Login</h1>
+        <p class="login-subtitle" id="login-subtitle">
+          Sign in with your registered mobile number to manage appointments and view laboratory soil reports.
+        </p>
+      </div>
+
+      <!-- Staff / Admin Description Banner -->
+      <div id="staff-description-banner" class="staff-description-banner" style="display: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="staff-desc-icon" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <div class="staff-desc-text">
+          <strong>Authorized Access Only:</strong> Authorized access for operators, field workers, laboratory staff, and administrators.
+        </div>
+      </div>
+
+      <!-- Demo Loaded Feedback Banner (Active only when demo credentials loaded) -->
+      <div id="demo-loaded-banner" class="demo-loaded-banner" style="display: none;" role="status">
+        <span class="demo-banner-icon">&#10003;</span>
+        <div class="demo-banner-content">
+          <strong id="demo-loaded-name">Demo Account Loaded</strong>
+          <div id="demo-loaded-desc" class="demo-banner-desc">Credentials filled. Click <strong>Sign In</strong> below.</div>
+        </div>
+      </div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label for="login-phone" class="form-label" id="phone-label">
+            Mobile Number <span class="required">*</span>
+          </label>
+          <input type="tel" id="login-phone" name="phone" class="form-control" placeholder="+919876543210" required autocomplete="username">
+          <div class="form-text" id="phone-help-text">Enter your registered phone number (e.g. +919876543210).</div>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label for="login-password" class="form-label" style="margin-bottom: 0;">
+              Password <span class="required">*</span>
+            </label>
+            <a href="#" id="link-forgot-password" class="forgot-password-link">Forgot password?</a>
+          </div>
+          <input type="password" id="login-password" name="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+        </div>
+
+        <div id="login-error" class="alert alert-error" style="display: none;"></div>
+
+        <button type="submit" id="btn-submit-login" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+          Sign In as Farmer
+        </button>
+      </form>
+
+      <!-- Farmer Links -->
+      <div id="farmer-footer-links" class="login-footer-links">
+        New farmer? <a href="/register" class="link-register">Register here</a>
+        <span style="margin: 0 0.4rem; color: var(--color-text-muted);">|</span>
+        <a href="/claim" style="color: var(--color-primary-green); font-weight: 600;">Activate Assisted Account</a>
+      </div>
+
+      <!-- Staff Security Notice (No public registration) -->
+      <div id="staff-footer-notice" class="staff-footer-notice" style="display: none;">
+        Staff accounts are provisioned exclusively by authorized administrators. Public registration is not permitted.
+      </div>
+    </div>
+  </div>
+
+  {% if config.DEMO_MODE %}
+  <!-- Explore NAMMA BELE — Demo Access Panel -->
+  <aside class="demo-access-panel" id="demo-access-panel" aria-label="Explore NAMMA BELE Demonstration Accounts">
+    <div class="demo-panel-top-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+      <span>Academic Review Demonstration</span>
+    </div>
+
+    <h2 class="demo-panel-title">Explore NAMMA BELE — Demo Access</h2>
+    <p class="demo-panel-subtitle">Choose a role to explore the platform using our pre-configured demonstration accounts.</p>
+
+    <div class="demo-meta-bar">
+      <div class="demo-meta-item">
+        <strong>Common Password:</strong> <code class="demo-meta-pwd-code">DemoUser@2026!</code>
+      </div>
+      <div class="demo-meta-item" style="color: var(--namma-terracotta, #AF7137); font-weight: 650;">
+        1-Click Auto-Fill Enabled
+      </div>
+    </div>
+
+    <!-- 1. Farmers & Agricultural Producers -->
+    <div class="demo-section-label">Farmers &amp; Agricultural Producers</div>
+    <div class="demo-accounts-grid">
+      <!-- Demo Farmer Mallikarjuna -->
+      <button type="button" class="demo-role-card" data-phone="+919999000001" data-role-type="farmer" data-name="Demo Farmer Mallikarjuna" data-role-title="Farmer">
+        <div class="demo-card-head">
+          <span class="demo-role-pill demo-pill-farmer">Farmer</span>
+          <span class="demo-phone-tag">+919999000001</span>
+        </div>
+        <div class="demo-card-main">
+          <span class="demo-user-name">Demo Farmer Mallikarjuna</span>
+          <span class="demo-card-action-hint">Select &rarr;</span>
+        </div>
+        <div class="demo-card-desc">Sugarcane grower (Mandya) &bull; 2 plots, appointments, sample tracking &amp; approved soil health report.</div>
+      </button>
+
+      <!-- Demo Farmer Shivalingappa -->
+      <button type="button" class="demo-role-card" data-phone="+919999000009" data-role-type="farmer" data-name="Demo Farmer Shivalingappa" data-role-title="Second Farmer">
+        <div class="demo-card-head">
+          <span class="demo-role-pill demo-pill-farmer">Second Farmer</span>
+          <span class="demo-phone-tag">+919999000009</span>
+        </div>
+        <div class="demo-card-main">
+          <span class="demo-user-name">Demo Farmer Shivalingappa</span>
+          <span class="demo-card-action-hint">Select &rarr;</span>
+        </div>
+        <div class="demo-card-desc">Ragi &amp; paddy farmer &bull; Scheduled visit &amp; active soil sample collection.</div>
+      </button>
+
+      <!-- Demo Assisted Farmer Chennamma (UNCLAIMED) -->
+      <div class="demo-role-card demo-unclaimed-card" data-phone="+919999000002" data-role-type="farmer" data-name="Demo Assisted Farmer Chennamma" data-role-title="Assisted Farmer" data-unclaimed="true">
+        <div class="demo-card-head">
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span class="demo-role-pill demo-pill-unclaimed">Assisted Farmer</span>
+            <span class="demo-role-pill demo-pill-unclaimed" style="background: #F59E0B; color: #FFFFFF; border-color: #D97706;">UNCLAIMED</span>
+          </div>
+          <span class="demo-phone-tag">+919999000002</span>
+        </div>
+        <div class="demo-card-main">
+          <span class="demo-user-name">Demo Assisted Farmer Chennamma</span>
+        </div>
+        <div class="demo-card-desc">Assisted farmer account created by operator. Needs activation via OTP before standard login.</div>
+        <div class="demo-claim-actions">
+          <div class="demo-otp-badge">
+            <span>Demo OTP:</span>
+            <strong>123456</strong>
+          </div>
+          <a href="/claim" class="demo-claim-btn" id="btn-goto-claim">Activate at /claim &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Operations & Field Service -->
+    <div class="demo-section-label">Field Operations &amp; CSC Counter</div>
+    <div class="demo-accounts-grid">
+      <!-- Demo Operator Pooja -->
+      <button type="button" class="demo-role-card" data-phone="+919999000003" data-role-type="staff" data-name="Demo Operator Pooja" data-role-title="Operator">
+        <div class="demo-card-head">
+          <span class="demo-role-pill demo-pill-operator">Operator</span>
+          <span class="demo-phone-tag">+919999000003</span>
+        </div>
+        <div class="demo-card-main">
+          <span class="demo-user-name">Demo Operator Pooja</span>
+          <span class="demo-card-action-hint">Select &rarr;</span>
+        </div>
+        <div class="demo-card-desc">CSC service counter &bull; Assisted booking, farmer lookup &amp; postal sample dispatch.</div>
+      </button>
+
+      <!-- Demo Field Technician Ravi Kumar -->
+      <button type="button" class="demo-role-card" data-phone="+919999000004" data-role-type="staff" data-name="Demo Field Technician Ravi Kumar" data-role-title="Field Worker">
+        <div class="demo-card-head">
+          <span class="demo-role-pill demo-pill-field">Field Worker</span>
+          <span class="demo-phone-tag">+919999000004</span>
+        </div>
+        <div class="demo-card-main">
+          <span class="demo-user-name">Demo Field Technician Ravi Kumar</span>
+          <span class="demo-card-action-hint">Select &rarr;</span>
+        </div>
+        <div class="demo-card-desc">Field sample collection &bull; Geolocation check-in &amp; parcel barcode association.</div>
+      </button>
+    </div>
+
+    <!-- 3. Laboratory & Scientific Analysis -->
+    <div class="demo-section-label">Laboratory &amp; Quality Control</div>
+    <div class="demo-accounts-grid">
+      <!-- Demo Lab Analyst Dr. Anita -->
+      <button type="button" class="demo-role-card" data-phone="+919999000005" data-role-type="staff" data-name="Demo Lab Analyst Dr. Anita" data-role-title="Lab Analyst">
+        <div class="demo-card-head">
+          <span class="demo-role-pill demo-pill-analyst">Lab Analyst</span>
+          <span class="demo-phone-tag">+919999000005</span>
+        </div>
+        <div class="demo-card-main">
+          <span class="demo-user-name">Demo Lab Analyst Dr. Anita</span>
+          <span class="demo-card-action-hint">Select &rarr;</span>
+        </div>
+        <div class="demo-card-desc">Mandya Agricultural University Lab &bull; Chemical assay entry (N, P, K, pH, EC).</div>
+      </button>
+
+      <!-- Demo Lab Supervisor Dr. Patil -->
+      <button type="button" class="demo-role-card" data-phone="+919999000006" data-role-type="staff" data-name="Demo Lab Supervisor Dr. Patil" data-role-title="Lab Supervisor">
+        <div class="demo-card-head">
+          <span class="demo-role-pill demo-pill-supervisor">Lab Supervisor</span>
+          <span class="demo-phone-tag">+919999000006</span>
+        </div>
+        <div class="demo-card-main">
+          <span class="demo-user-name">Demo Lab Supervisor Dr. Patil</span>
+          <span class="demo-card-action-hint">Select &rarr;</span>
+        </div>
+        <div class="demo-card-desc">Chief Chemist &bull; Result verification, QA review &amp; automated report generation.</div>
+      </button>
+    </div>
+
+    <!-- 4. Advisory & Administration -->
+    <div class="demo-section-label">Advisory &amp; Administration</div>
+    <div class="demo-accounts-grid">
+      <!-- Demo Agronomist Dr. Hegde -->
+      <button type="button" class="demo-role-card" data-phone="+919999000007" data-role-type="staff" data-name="Demo Agronomist Dr. Hegde" data-role-title="Agricultural Advisor">
+        <div class="demo-card-head">
+          <span class="demo-role-pill demo-pill-advisor">Agricultural Advisor</span>
+          <span class="demo-phone-tag">+919999000007</span>
+        </div>
+        <div class="demo-card-main">
+          <span class="demo-user-name">Demo Agronomist Dr. Hegde</span>
+          <span class="demo-card-action-hint">Select &rarr;</span>
+        </div>
+        <div class="demo-card-desc">Certified Agronomist &bull; Farmer consultations, fertilizer dosing &amp; crop advisories.</div>
+      </button>
+
+      <!-- Demo Administrator Lead -->
+      <button type="button" class="demo-role-card" data-phone="+919999000008" data-role-type="staff" data-name="Demo Administrator Lead" data-role-title="Administrator">
+        <div class="demo-card-head">
+          <span class="demo-role-pill demo-pill-admin">Administrator</span>
+          <span class="demo-phone-tag">+919999000008</span>
+        </div>
+        <div class="demo-card-main">
+          <span class="demo-user-name">Demo Administrator Lead</span>
+          <span class="demo-card-action-hint">Select &rarr;</span>
+        </div>
+        <div class="demo-card-desc">System governance &bull; Reference laboratories, user accounts, postal dispatches &amp; audit trails.</div>
+      </button>
+    </div>
+  </aside>
+  {% endif %}
+</div>
+
+<!-- Modal Dialog for Password Assistance -->
+<div id="forgot-password-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="forgot-modal-title">
+  <div class="modal-dialog" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 id="forgot-modal-title" class="modal-title">Farmer Password Assistance</h3>
+      <button type="button" id="btn-close-forgot-modal" class="modal-close" aria-label="Close dialog">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 0.75rem; color: var(--slate-700);">
+        If you have forgotten your password or if your account was registered by an agricultural service operator:
+      </p>
+      <ul style="margin: 0.5rem 0 1rem 1.25rem; color: var(--slate-600); line-height: 1.6; font-size: 0.92rem;">
+        <li>Call the Agricultural Soil Testing Helpline at <strong>+91-800-SOIL-TEST</strong> (Mon–Sat, 9:00 AM – 6:00 PM).</li>
+        <li>Contact your assigned Village Agricultural Assistant or regional laboratory coordinator.</li>
+        <li>Present your land survey document or official mobile number for identity verification.</li>
+      </ul>
+      <p style="margin: 0; font-size: 0.85rem; color: var(--slate-500); background: var(--slate-50); padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--slate-200);">
+        <em>Note: Direct self-service SMS account activation is currently scheduled for upcoming platform release.</em>
+      </p>
+    </div>
+    <div class="modal-footer" style="padding: 1rem 1.5rem; display: flex; justify-content: flex-end; border-top: 1px solid var(--slate-200);">
+      <button type="button" id="btn-dismiss-forgot-modal" class="btn btn-secondary">Close</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    // 1. If user is already authenticated, redirect them automatically based on role
+    try {
+      const auth = await API.checkAuth();
+      if (auth && auth.authenticated && auth.user) {
+        if (auth.user.role === 'admin') {
+          window.location.href = '/admin';
+          return;
+        } else {
+          window.location.href = '/farmer';
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // 2. Check query params for registration success notice or staff mode
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('registered') === '1') {
+      showAlert('Registration completed! Please enter your credentials to log in.', 'success');
+    }
+
+    // Elements
+    const tabFarmer = document.getElementById('tab-farmer-login');
+    const tabStaff = document.getElementById('tab-staff-login');
+    const roleBadge = document.getElementById('login-role-badge');
+    const loginTitle = document.getElementById('login-title');
+    const loginSubtitle = document.getElementById('login-subtitle');
+    const staffBanner = document.getElementById('staff-description-banner');
+    const phoneHelp = document.getElementById('phone-help-text');
+    const phoneInput = document.getElementById('login-phone');
+    const passwordInput = document.getElementById('login-password');
+    const submitBtn = document.getElementById('btn-submit-login');
+    const farmerLinks = document.getElementById('farmer-footer-links');
+    const staffNotice = document.getElementById('staff-footer-notice');
+    const forgotLink = document.getElementById('link-forgot-password');
+    const errorBox = document.getElementById('login-error');
+    const form = document.getElementById('login-form');
+
+    // Modal elements
+    const forgotModal = document.getElementById('forgot-password-modal');
+    const btnCloseModal = document.getElementById('btn-close-forgot-modal');
+    const btnDismissModal = document.getElementById('btn-dismiss-forgot-modal');
+
+    let currentMode = 'farmer'; // 'farmer' | 'staff'
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+    }
+
+    function clearError() {
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      clearError();
+
+      if (mode === 'farmer') {
+        tabFarmer.classList.add('active');
+        tabFarmer.setAttribute('aria-selected', 'true');
+        tabStaff.classList.remove('active', 'staff-active');
+        tabStaff.setAttribute('aria-selected', 'false');
+
+        roleBadge.textContent = 'Farmer Portal';
+        roleBadge.className = 'login-badge-tag';
+        loginTitle.textContent = 'Portal Login';
+        loginSubtitle.textContent = 'Sign in with your registered mobile number to manage appointments and view laboratory soil reports.';
+
+        staffBanner.style.display = 'none';
+        farmerLinks.style.display = 'block';
+        staffNotice.style.display = 'none';
+        forgotLink.style.display = 'inline-block';
+
+        phoneInput.placeholder = '+919876543210';
+        phoneHelp.textContent = 'Enter your registered phone number (e.g. +919876543210).';
+        submitBtn.textContent = 'Sign In as Farmer';
+      } else {
+        tabStaff.classList.add('active', 'staff-active');
+        tabStaff.setAttribute('aria-selected', 'true');
+        tabFarmer.classList.remove('active');
+        tabFarmer.setAttribute('aria-selected', 'false');
+
+        roleBadge.textContent = 'Staff & Administration';
+        roleBadge.className = 'login-badge-tag staff-badge';
+        loginTitle.textContent = 'Portal Login — Staff';
+        loginSubtitle.textContent = 'Authorized portal access for agricultural testing laboratory staff and administrators.';
+
+        staffBanner.style.display = 'flex';
+        farmerLinks.style.display = 'none';
+        staffNotice.style.display = 'block';
+        forgotLink.style.display = 'none';
+
+        phoneInput.placeholder = '+919876543200';
+        phoneHelp.textContent = 'Enter your official staff phone number in E.164 format (e.g. +919876543200).';
+        submitBtn.textContent = 'Staff / Admin Sign In';
+      }
+    }
+
+    // Check initial query parameter or hash
+    if (urlParams.get('staff') === '1' || urlParams.get('mode') === 'staff' || window.location.hash === '#staff') {
+      setMode('staff');
+    } else {
+      setMode('farmer');
+    }
+
+    // Tab click handlers
+    tabFarmer.addEventListener('click', () => setMode('farmer'));
+    tabStaff.addEventListener('click', () => setMode('staff'));
+
+    // Forgot password modal triggers
+    forgotLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotModal.style.display = 'flex';
+    });
+
+    function closeForgotModal() {
+      forgotModal.style.display = 'none';
+    }
+
+    btnCloseModal.addEventListener('click', closeForgotModal);
+    btnDismissModal.addEventListener('click', closeForgotModal);
+    forgotModal.addEventListener('click', (e) => {
+      if (e.target === forgotModal) closeForgotModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && forgotModal.style.display === 'flex') {
+        closeForgotModal();
+      }
+    });
+
+    {% if config.DEMO_MODE %}
+    // Demo Account Access Panel Interactivity (Academic Demonstration Mode)
+    const demoCards = document.querySelectorAll('.demo-role-card');
+    const demoBanner = document.getElementById('demo-loaded-banner');
+    const demoLoadedName = document.getElementById('demo-loaded-name');
+    const demoLoadedDesc = document.getElementById('demo-loaded-desc');
+
+    demoCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        // If clicking on an anchor tag like /claim, do not intercept default link navigation
+        if (e.target.closest('a')) return;
+
+        const phone = card.getAttribute('data-phone');
+        const roleType = card.getAttribute('data-role-type'); // 'farmer' | 'staff'
+        const userName = card.getAttribute('data-name');
+        const roleTitle = card.getAttribute('data-role-title');
+        const isUnclaimed = card.getAttribute('data-unclaimed') === 'true';
+
+        clearError();
+
+        // Highlight selected demo card
+        demoCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+
+        // Automatically align the login mode tab
+        setMode(roleType === 'farmer' ? 'farmer' : 'staff');
+
+        // Autofill credentials
+        phoneInput.value = phone || '';
+        passwordInput.value = 'DemoUser@2026!';
+
+        // Display confirmation feedback banner inside login card
+        if (demoBanner && demoLoadedName && demoLoadedDesc) {
+          demoLoadedName.textContent = `${userName} — ${roleTitle}`;
+          if (isUnclaimed) {
+            demoLoadedDesc.innerHTML = 'Account is <strong style="color: #B45309;">UNCLAIMED</strong>. Enter OTP <code style="font-weight: 700; background: #FEF3C7; padding: 2px 5px; border-radius: 3px; border: 1px solid #FCD34D;">123456</code> at <a href="/claim" style="text-decoration: underline; font-weight: 700; color: #B45309;">/claim</a> to activate, or sign in after activation.';
+          } else {
+            demoLoadedDesc.innerHTML = `Loaded phone <code>${phone}</code> and password. Click <strong>${roleType === 'farmer' ? 'Sign In as Farmer' : 'Staff / Admin Sign In'}</strong> below.`;
+          }
+          demoBanner.style.display = 'flex';
+        }
+
+        // Scroll smoothly to login form on smaller viewports
+        if (window.innerWidth <= 960) {
+          phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        submitBtn.focus();
+      });
+    });
+    {% endif %}
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+
+      const phone = phoneInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!phone) {
+        showError('Please enter your phone number.');
+        phoneInput.focus();
+        return;
+      }
+      if (!password) {
+        showError('Please enter your password.');
+        passwordInput.focus();
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const originalText = submitBtn.textContent;
+      submitBtn.innerHTML = '<span class="spinner"></span> Signing in...';
+
+      try {
+        const response = await API.post('/api/auth/login', { phone, password });
+        
+        // Refresh the CSRF token after login since the session cookie was updated
+        await API.getCsrfToken(true);
+
+        const verifiedRole = response.user && response.user.role;
+
+        // Role verification and routing handled strictly according to verified backend role
+        if (verifiedRole === 'admin') {
+          showAlert('Administrator authentication verified. Redirecting...', 'success');
+          setTimeout(() => { window.location.href = '/admin'; }, 400);
+        } else if (verifiedRole === 'operator') {
+          showAlert('Operator authentication verified. Redirecting to Service Operations...', 'success');
+          setTimeout(() => { window.location.href = '/operator'; }, 400);
+        } else if (verifiedRole === 'field_worker') {
+          showAlert('Field technician verified. Redirecting to Field Visits...', 'success');
+          setTimeout(() => { window.location.href = '/field-worker'; }, 400);
+        } else if (verifiedRole === 'lab_staff') {
+          showAlert('Laboratory staff verified. Redirecting to Laboratory Workspace...', 'success');
+          setTimeout(() => { window.location.href = '/lab'; }, 400);
+        } else if (verifiedRole === 'advisor') {
+          showAlert('Agricultural expert verified. Redirecting to Expert Consultations...', 'success');
+          setTimeout(() => { window.location.href = '/advisor'; }, 400);
+        } else {
+          // Farmer account
+          showAlert('Login successful! Redirecting to Farmer Portal...', 'success');
+          setTimeout(() => { window.location.href = '/farmer'; }, 400);
+        }
+      } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        showError(err.message || 'Invalid phone number or password. Please try again.');
+      }
+    });
+  });
+</script>
+{% endblock %}

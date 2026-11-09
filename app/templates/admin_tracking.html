@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Operations Tracking — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">🛰️ NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Pipeline Tracking</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">13-Stage Sample Pipeline Tracking</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Field worker assignment, sample intake verification, and end-to-end timeline audit trail.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="/admin/dispatch" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">Postal Dispatch Queue</a>
+        <a href="/admin" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.2); color: white;">Admin Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+    <h3 style="margin-top: 0; color: var(--color-forest-green); margin-bottom: 1rem;">Active Soil Testing Operations</h3>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Appointment #</th>
+            <th>Farmer</th>
+            <th>Field Details</th>
+            <th>Preferred Date</th>
+            <th>Status</th>
+            <th>Field Worker</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tracking-admin-tbody">
+          <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">Loading active appointments...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Assign Field Worker -->
+<div id="modal-assign" class="modal-backdrop" style="display: none;">
+  <div class="modal-dialog" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3 class="modal-title">🚜 Assign Field Technician</h3>
+      <button type="button" class="modal-close" id="btn-close-assign-modal">&times;</button>
+    </div>
+    <form id="form-assign-worker" style="padding: 1.25rem;">
+      <input type="hidden" id="assign-appt-id">
+
+      <div style="background: var(--color-bg-light); padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem;">
+        <div style="font-weight: 700; color: var(--color-forest-green);" id="assign-farmer-label">Farmer Details</div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label class="form-label">Select Field Worker <span class="required">*</span></label>
+        <select id="assign-worker-select" class="form-control" required>
+          <option value="">-- Choose Field Worker --</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Confirmed Scheduled Date <span class="required">*</span></label>
+          <input type="date" id="assign-date" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time Window Slot <span class="required">*</span></label>
+          <select id="assign-slot" class="form-control" required>
+            <option value="09:00-12:00">09:00 - 12:00 (Morning)</option>
+            <option value="14:00-17:00">14:00 - 17:00 (Afternoon)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-assign">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-save-assign">Confirm Assignment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const tbody = document.getElementById('tracking-admin-tbody');
+  const modal = document.getElementById('modal-assign');
+  const form = document.getElementById('form-assign-worker');
+  const apptIdInput = document.getElementById('assign-appt-id');
+  const farmerLabel = document.getElementById('assign-farmer-label');
+  const workerSelect = document.getElementById('assign-worker-select');
+  const dateInput = document.getElementById('assign-date');
+  const slotSelect = document.getElementById('assign-slot');
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  async function loadFieldWorkers() {
+    try {
+      const res = await API.get('/api/admin/field-workers');
+      const workers = res.field_workers || [];
+      workerSelect.innerHTML = '<option value="">-- Choose Field Worker --</option>';
+      workers.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w.id;
+        opt.textContent = `${w.name} (${w.phone})`;
+        workerSelect.appendChild(opt);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function loadAppointments() {
+    try {
+      const res = await API.get('/api/admin/appointments?per_page=50');
+      const appts = res.appointments || [];
+
+      if (appts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">No appointments found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      appts.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>#${a.id}</strong></td>
+          <td><strong>${escapeHtml(a.farmer_name)}</strong><br><small>📞 ${escapeHtml(a.farmer_phone)}</small></td>
+          <td>${escapeHtml(a.land_details)}</td>
+          <td>${escapeHtml(a.preferred_date)} (${escapeHtml(a.preferred_time)})</td>
+          <td><span class="badge ${a.status === 'Completed' ? 'badge-approved' : (a.status === 'Approved' ? 'badge-approved' : 'badge-pending')}">${escapeHtml(a.status)}</span></td>
+          <td><small id="worker-assigned-${a.id}">Assigned Technician</small></td>
+          <td>
+            <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm btn-assign" data-id="${a.id}" data-farmer="${escapeHtml(a.farmer_name)}" data-date="${a.preferred_date}" data-slot="${a.preferred_time}">Assign Tech</button>
+              <a href="/farmer/tracking?id=${a.id}" class="btn btn-primary btn-sm" target="_blank">Timeline</a>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll('.btn-assign').forEach(btn => {
+        btn.addEventListener('click', () => {
+          apptIdInput.value = btn.dataset.id;
+          farmerLabel.textContent = `Appointment #${btn.dataset.id} — ${btn.dataset.farmer}`;
+          dateInput.value = btn.dataset.date;
+          slotSelect.value = btn.dataset.slot || '09:00-12:00';
+          modal.style.display = 'flex';
+        });
+      });
+    } catch (err) {
+      window.showAlert(err.message || 'Error loading appointments.', 'error');
+    }
+  }
+
+  document.getElementById('btn-close-assign-modal').addEventListener('click', () => modal.style.display = 'none');
+  document.getElementById('btn-cancel-assign').addEventListener('click', () => modal.style.display = 'none');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const apptId = apptIdInput.value;
+    const worker_id = workerSelect.value ? parseInt(workerSelect.value) : null;
+    const scheduled_date = dateInput.value;
+    const scheduled_slot = slotSelect.value;
+
+    try {
+      await API.post(`/api/admin/appointments/${apptId}/assign`, {
+        worker_id,
+        scheduled_date,
+        scheduled_slot,
+      });
+      window.showAlert(`Field worker assigned to appointment #${apptId}!`, 'success');
+      modal.style.display = 'none';
+      loadAppointments();
+    } catch (err) {
+      window.showAlert(err.message || 'Assignment failed.', 'error');
+    }
+  });
+
+  await loadFieldWorkers();
+  await loadAppointments();
+});
+</script>
+{% endblock %}
+

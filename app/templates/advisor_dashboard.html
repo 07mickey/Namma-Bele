@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Expert Advisory Desk — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">🧑‍🔬 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Advisory Console</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">Expert Consultations Queue</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Review farmer agronomic queries, nutrient deficiency symptoms, and provide certified crop recommendations.</p>
+        </div>
+      </div>
+      <button id="btn-refresh-queries" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">Refresh Queue</button>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.5rem; margin-bottom: 2rem; align-items: start;">
+    <!-- Left: Advisory Queue -->
+    <div class="card" style="padding: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h3 style="margin: 0; color: var(--color-forest-green); font-size: 1.15rem;">Incoming Farmer Queries</h3>
+        <select id="select-status-filter" class="form-control" style="width: auto; padding: 0.35rem 0.6rem; font-size: 0.85rem;">
+          <option value="">All Statuses</option>
+          <option value="OPEN" selected>Open (Needs Answer)</option>
+          <option value="IN_REVIEW">In Review</option>
+          <option value="ANSWERED">Answered</option>
+          <option value="CLOSED">Closed</option>
+        </select>
+      </div>
+
+      <div id="adv-loading" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">
+        <span class="spinner" style="border-top-color: var(--primary);"></span> Loading queries...
+      </div>
+
+      <div id="adv-empty" class="empty-state" style="display: none; padding: 1.5rem 0.5rem;">
+        <div class="empty-state-icon" style="font-size: 2rem;">🌾</div>
+        <h4 style="margin: 0.5rem 0 0.25rem 0;">No queries in this filter</h4>
+        <p style="font-size: 0.85rem;">All farmer queries have been responded to.</p>
+      </div>
+
+      <div id="adv-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+    </div>
+
+    <!-- Right: Thread Viewer & Expert Composer -->
+    <div class="card" id="adv-thread-card" style="padding: 1.5rem;">
+      <div id="adv-placeholder" style="text-align: center; padding: 3rem 1rem; color: var(--color-text-muted);">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔬</div>
+        <h4>Select a query to compose advisory response</h4>
+        <p style="font-size: 0.9rem;">View farmer observations, plot acreage, and provide scientific agronomic guidance.</p>
+      </div>
+
+      <div id="adv-thread-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+          <div>
+            <span id="adv-thread-category" class="badge badge-approved" style="font-size: 0.8rem;"></span>
+            <h3 id="adv-thread-subject" style="margin: 0.3rem 0; color: var(--color-forest-green); font-size: 1.2rem;"></h3>
+            <div id="adv-thread-farmer" style="font-size: 0.88rem; color: var(--color-text-muted);"></div>
+          </div>
+          <span id="adv-thread-status" class="badge"></span>
+        </div>
+
+        <div id="adv-thread-messages" style="display: flex; flex-direction: column; gap: 0.85rem; max-height: 380px; overflow-y: auto; padding: 0.5rem 0.25rem; margin-bottom: 1rem;"></div>
+
+        <form id="adv-reply-form" style="border-top: 1px solid var(--color-border); padding-top: 1rem;">
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label" style="font-weight: 700;">Expert Recommendation / Response <span class="required">*</span></label>
+            <textarea id="adv-reply-text" class="form-control" rows="4" placeholder="Provide clear, scientifically validated dosage, deficiency treatment, or crop rotation advice in Kannada or English..." required></textarea>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary" id="btn-submit-expert-reply">
+              Post Official Expert Advice
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const listEl = document.getElementById('adv-list');
+  const loadingEl = document.getElementById('adv-loading');
+  const emptyEl = document.getElementById('adv-empty');
+  const filterSelect = document.getElementById('select-status-filter');
+  const btnRefresh = document.getElementById('btn-refresh-queries');
+
+  const placeholderEl = document.getElementById('adv-placeholder');
+  const contentEl = document.getElementById('adv-thread-content');
+  const subjectEl = document.getElementById('adv-thread-subject');
+  const categoryEl = document.getElementById('adv-thread-category');
+  const farmerEl = document.getElementById('adv-thread-farmer');
+  const statusEl = document.getElementById('adv-thread-status');
+  const messagesEl = document.getElementById('adv-thread-messages');
+  const replyForm = document.getElementById('adv-reply-form');
+  const replyText = document.getElementById('adv-reply-text');
+
+  let activeId = null;
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  async function loadQueries() {
+    loadingEl.style.display = 'block';
+    emptyEl.style.display = 'none';
+
+    try {
+      const status = filterSelect.value;
+      const url = status ? `/api/consultations?status=${status}` : '/api/consultations';
+      const res = await API.get(url);
+      const items = res.consultations || [];
+      loadingEl.style.display = 'none';
+
+      if (items.length === 0) {
+        emptyEl.style.display = 'block';
+        listEl.innerHTML = '';
+        return;
+      }
+
+      listEl.innerHTML = '';
+      items.forEach(c => {
+        const item = document.createElement('div');
+        item.style.padding = '0.75rem 1rem';
+        item.style.borderRadius = '6px';
+        item.style.border = c.id === activeId ? '2px solid var(--color-primary-green)' : '1px solid var(--color-border)';
+        item.style.background = c.id === activeId ? 'var(--color-bg-light)' : '#ffffff';
+        item.style.cursor = 'pointer';
+
+        let badgeClass = 'badge-approved';
+        if (c.status === 'OPEN') badgeClass = 'badge-pending';
+        else if (c.status === 'IN_REVIEW') badgeClass = 'badge-pending';
+
+        item.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">${escapeHtml(c.category)}</span>
+            <span class="badge ${badgeClass}" style="font-size: 0.75rem;">${escapeHtml(c.status)}</span>
+          </div>
+          <div style="font-weight: 700; color: var(--color-forest-green); font-size: 0.95rem; margin-bottom: 0.25rem;">${escapeHtml(c.subject)}</div>
+          <div style="font-size: 0.82rem; color: var(--color-text-muted);">
+            Farmer: <strong>${escapeHtml(c.farmer_name)}</strong> (📞 ${escapeHtml(c.farmer_phone)})
+          </div>
+        `;
+
+        item.addEventListener('click', () => loadThread(c.id));
+        listEl.appendChild(item);
+      });
+    } catch (err) {
+      loadingEl.style.display = 'none';
+      window.showAlert(err.message || 'Error loading advisory queue.', 'error');
+    }
+  }
+
+  async function loadThread(id) {
+    activeId = id;
+    try {
+      const res = await API.get(`/api/consultations/${id}`);
+      const c = res.consultation;
+      const msgs = res.messages || [];
+
+      placeholderEl.style.display = 'none';
+      contentEl.style.display = 'block';
+
+      subjectEl.textContent = c.subject;
+      categoryEl.textContent = c.category;
+      farmerEl.innerHTML = `From: <strong>${escapeHtml(c.farmer_name)}</strong> (${escapeHtml(c.farmer_phone)}) • Submitted: ${escapeHtml(c.created_at)}`;
+      statusEl.textContent = c.status;
+      statusEl.className = 'badge ' + (c.status === 'ANSWERED' ? 'badge-approved' : 'badge-pending');
+
+      messagesEl.innerHTML = '';
+      msgs.forEach(m => {
+        const bubble = document.createElement('div');
+        const isExpert = m.sender_role === 'advisor' || m.sender_role === 'admin';
+        bubble.style.alignSelf = isExpert ? 'flex-end' : 'flex-start';
+        bubble.style.maxWidth = '85%';
+        bubble.style.background = isExpert ? '#e8f5e9' : '#f5f5f5';
+        bubble.style.border = isExpert ? '1px solid #c8e6c9' : '1px solid #e0e0e0';
+        bubble.style.borderRadius = '8px';
+        bubble.style.padding = '0.75rem 1rem';
+
+        bubble.innerHTML = `
+          <div style="font-size: 0.8rem; font-weight: 700; color: ${isExpert ? 'var(--color-forest-green)' : '#333333'}; margin-bottom: 0.25rem;">
+            ${isExpert ? '👨‍🔬 ' + escapeHtml(m.sender_name) + ' (Expert)' : '🧑‍🌾 Farmer ' + escapeHtml(m.sender_name)}
+          </div>
+          <div style="font-size: 0.92rem; line-height: 1.45; color: var(--color-text-main);">${escapeHtml(m.message_text)}</div>
+          <div style="font-size: 0.75rem; color: var(--color-text-muted); text-align: right; margin-top: 0.3rem;">${escapeHtml(m.created_at)}</div>
+        `;
+        messagesEl.appendChild(bubble);
+      });
+
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      loadQueries();
+    } catch (err) {
+      window.showAlert(err.message || 'Error loading thread.', 'error');
+    }
+  }
+
+  filterSelect.addEventListener('change', loadQueries);
+  btnRefresh.addEventListener('click', loadQueries);
+
+  replyForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = replyText.value.trim();
+    if (!text || !activeId) return;
+
+    try {
+      await API.post(`/api/consultations/${activeId}/messages`, { message_text: text });
+      window.showAlert('Expert advice published and sent to farmer!', 'success');
+      replyText.value = '';
+      loadThread(activeId);
+    } catch (err) {
+      window.showAlert(err.message || 'Error posting reply.', 'error');
+    }
+  });
+
+  loadQueries();
+});
+</script>
+{% endblock %}
+

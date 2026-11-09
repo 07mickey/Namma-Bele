@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+
+{% block title %}NAMMA BELE — Soil Testing &amp; Farmer Services{% endblock %}
+
+{% block content %}
+<!-- Hero Section with M2 Editorial Top Triad -->
+<section class="hero-card" style="margin-bottom: 2.5rem; text-align: center; position: relative;">
+  
+  <!-- Editorial Top Triad: Mission Statement | Soil Sprout Visual | Extension Focus -->
+  <div class="hero-editorial-top">
+    <div class="hero-editorial-statement">
+      Turning soil fertility data into higher crop harvest yields and zero chemical fertilizer wastage.
+      <div>
+        <a href="#why-test" style="color: #ffffff; text-decoration: underline;">Learn More &rarr;</a>
+      </div>
+    </div>
+
+    <!-- Organic Loam Soil Mound with Young Seedling Sprout -->
+    <div class="soil-mound-wrapper">
+      <svg class="soil-mound-svg" viewBox="0 0 220 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="soilDarkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#4a301a" />
+            <stop offset="50%" stop-color="#342010" />
+            <stop offset="100%" stop-color="#241508" />
+          </linearGradient>
+          <linearGradient id="sproutGrad" x1="0%" y1="100%" x2="50%" y2="0%">
+            <stop offset="0%" stop-color="#15803d" />
+            <stop offset="60%" stop-color="#22c55e" />
+            <stop offset="100%" stop-color="#86efac" />
+          </linearGradient>
+          <radialGradient id="soilGlow" cx="50%" cy="80%" r="50%">
+            <stop offset="0%" stop-color="rgba(110,71,38,0.3)" />
+            <stop offset="100%" stop-color="rgba(110,71,38,0)" />
+          </radialGradient>
+        </defs>
+
+        <!-- Ground Shadow / Base Glow -->
+        <ellipse cx="110" cy="125" rx="85" ry="12" fill="url(#soilGlow)" />
+
+        <!-- Loam Soil Mound (Rich Textured Strata) -->
+        <path d="M 28 126 C 45 102, 70 85, 110 82 C 150 85, 175 102, 192 126 C 170 132, 50 132, 28 126 Z" fill="url(#soilDarkGrad)" />
+        <path d="M 45 125 C 65 96, 90 88, 110 86 C 130 88, 155 96, 175 125 Z" fill="#2d1a0d" opacity="0.6" />
+        
+        <!-- Soil Crumb Texture Specks -->
+        <circle cx="82" cy="108" r="2.5" fill="#6e4726" />
+        <circle cx="98" cy="98" r="1.8" fill="#8d5b32" />
+        <circle cx="118" cy="95" r="2.2" fill="#54361c" />
+        <circle cx="138" cy="106" r="2.0" fill="#6e4726" />
+        <circle cx="155" cy="116" r="1.5" fill="#8d5b32" />
+        <circle cx="65" cy="118" r="1.7" fill="#8d5b32" />
+
+        <!-- Organic Plant Seedling Sprout Emerging from Soil -->
+        <!-- Main Stem -->
+        <path d="M 110 92 Q 109 52 110 32" stroke="url(#sproutGrad)" stroke-width="4.2" stroke-linecap="round" />
+        
+        <!-- Left Primary Leaf -->
+        <path d="M 110 48 C 96 44 80 48 76 60 C 82 72 102 66 109 53 Z" fill="url(#sproutGrad)" />
+        <path d="M 108 51 Q 95 56 80 59" stroke="#bbf7d0" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.8" />
+        
+        <!-- Right Young Leaf -->
+        <path d="M 110 38 C 124 32 140 34 144 46 C 138 56 118 52 110 41 Z" fill="url(#sproutGrad)" />
+        <path d="M 111 40 Q 123 43 138 45" stroke="#bbf7d0" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.8" />
+
+        <!-- Dewdrop on Leaf -->
+        <circle cx="80" cy="58" r="2.2" fill="#ffffff" opacity="0.9" />
+      </svg>
+    </div>
+
+    <!-- Authentic Agricultural Extension Box (Replaces Unsupported Ratings) -->
+    <div class="hero-trust-box">
+      <div class="hero-objective-title">
+        Agricultural Extension
+      </div>
+      <div class="hero-objective-caption">
+        Connecting village farms with accredited laboratory soil analysis
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Headline & Subtitle -->
+  <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35); color: #ffffff; font-size: 0.85rem; font-weight: 700; padding: 0.35rem 1.15rem; border-radius: var(--radius-pill); margin-bottom: 1rem;">
+    🌱 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ
+  </div>
+
+  <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 0.75rem;">
+    <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" style="max-height: 110px; width: auto; object-fit: contain; filter: drop-shadow(0 4px 14px rgba(0,0,0,0.2));">
+  </div>
+
+  <h1 style="font-size: 2.6rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 0.35rem; color: #ffffff;">
+    NAMMA BELE
+  </h1>
+  <div style="font-size: 1.25rem; font-weight: 600; color: #fdf9f2; margin-bottom: 1.25rem; letter-spacing: 0.02em;">
+    ನಮ್ಮ ಬೆಳೆ &mdash; Community Soil Testing Portal
+  </div>
+
+  <p style="font-size: 1.15rem; color: rgba(255,255,255,0.92); margin-bottom: 2.25rem; max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.65;">
+    Know your exact soil fertility before sowing season. Request an agricultural field officer to collect soil core samples from your land and download verified laboratory soil reports directly on your phone.
+  </p>
+
+  <!-- Hero Action Button Group -->
+  <div class="hero-actions" id="hero-actions-container" style="display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
+    <a href="/login" class="btn-pill-arrow">
+      <span>Book a Soil Test</span>
+      <span class="btn-pill-circle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </span>
+    </a>
+    <a href="/login" class="btn btn-secondary">Farmer Login</a>
+    <a href="/register" class="btn btn-outline" style="color: white; border-color: white;">Register as Farmer</a>
+    <a href="/soil-guide" class="btn btn-outline" style="color: white; border-color: white;">📖 Soil Health Guide</a>
+  </div>
+</section>
+
+<!-- System Status Indicator Card (Authoritative Diagnostics) -->
+<div class="card" style="margin-bottom: 2.5rem;">
+  <div class="card-header">
+    <h2 class="card-title">Portal Diagnostics</h2>
+    <span id="health-status-badge" class="badge badge-pending">Checking system health...</span>
+  </div>
+  <p id="health-status-msg" style="color: var(--slate-600); font-size: 0.95rem; margin: 0;">Contacting backend services...</p>
+</div>
+
+<!-- Why Test Soil Section (Asymmetric Bento Grid) -->
+<section class="bento-section" id="why-test">
+  <div class="bento-header">
+    <h2 class="section-title">Why Village Soil Testing Matters</h2>
+    <p class="section-subtitle">
+      Scientific chemical testing replaces guesswork with precision nutrient management, protecting farmer household income and preserving long-term soil vitality.
+    </p>
+  </div>
+
+  <!-- 3x2 Asymmetric Bento Grid -->
+  <div class="bento-grid">
+    
+    <!-- Bento 1: Visual Card (Standardized Sampling Protocol) -->
+    <div class="bento-card bento-card-visual" style="background: linear-gradient(135deg, #3c2115 0%, #5c3822 100%);">
+      <svg viewBox="0 0 300 200" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.45;" preserveAspectRatio="none">
+        <path d="M0,150 Q75,120 150,150 T300,140 L300,200 L0,200 Z" fill="#af7137" />
+        <path d="M0,165 Q100,140 200,165 T300,160 L300,200 L0,200 Z" fill="#3c2115" />
+        <circle cx="240" cy="50" r="30" fill="#fdf9f2" opacity="0.3" />
+      </svg>
+      <div class="bento-visual-overlay"></div>
+      <span class="bento-visual-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Standardized Field Sampling
+      </span>
+    </div>
+
+    <!-- Bento 2: Promotes Soil Health -->
+    <div class="bento-card bento-card-text">
+      <div class="bento-icon-pill">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+      </div>
+      <h3 class="bento-card-title">Promotes Soil Health</h3>
+      <p class="bento-card-desc">
+        Measures organic carbon, Nitrogen (N), Phosphorus (P), Potassium (K), and pH to identify soil deficiencies and restore balanced root-zone conditions.
+      </p>
+    </div>
+
+    <!-- Bento 3: Visual Card (Farm Plot Identification) -->
+    <div class="bento-card bento-card-visual" style="background: linear-gradient(135deg, #4a2818 0%, #af7137 100%);">
+      <svg viewBox="0 0 300 200" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.35;" preserveAspectRatio="none">
+        <circle cx="150" cy="100" r="70" stroke="#e6e2d9" stroke-width="2" fill="none" stroke-dasharray="6 4" />
+        <circle cx="150" cy="100" r="45" stroke="#e6e2d9" stroke-width="1.5" fill="none" />
+        <circle cx="150" cy="100" r="20" fill="#6b8a28" opacity="0.5" />
+      </svg>
+      <div class="bento-visual-overlay"></div>
+      <span class="bento-visual-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/></svg>
+        Farm Plot Identification
+      </span>
+    </div>
+
+    <!-- Bento 4: Informed Fertilizer Usage (No Unverified Numerical Claims) -->
+    <div class="bento-card bento-card-text bento-card-earth">
+      <div class="bento-icon-pill bento-icon-earth">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+        </svg>
+      </div>
+      <h3 class="bento-card-title">Informed Fertilizer Usage</h3>
+      <p class="bento-card-desc">
+        Soil test results reveal existing nutrient reserves, helping farmers avoid over-applying expensive chemical inputs and investing only where nutrients are genuinely needed.
+      </p>
+    </div>
+
+    <!-- Bento 5: Visual Card (Soil Biological Activity) -->
+    <div class="bento-card bento-card-visual" style="background: linear-gradient(135deg, #3c2115 0%, #af7137 100%);">
+      <svg viewBox="0 0 300 200" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.4;" preserveAspectRatio="none">
+        <path d="M60,180 Q150,110 240,180" stroke="#af7137" stroke-width="28" fill="none" stroke-linecap="round" />
+        <circle cx="150" cy="130" r="16" fill="#6b8a28" />
+      </svg>
+      <div class="bento-visual-overlay"></div>
+      <span class="bento-visual-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+        Biological Soil Activity
+      </span>
+    </div>
+
+    <!-- Bento 6: Prevents Soil Degradation -->
+    <div class="bento-card bento-card-text">
+      <div class="bento-icon-pill">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path>
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
+        </svg>
+      </div>
+      <h3 class="bento-card-title">Prevents Soil Degradation</h3>
+      <p class="bento-card-desc">
+        Repeated unmeasured chemical dumping can cause salinity buildup and severe pH imbalance. Routine testing monitors soil reaction to protect long-term soil biology.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- Spotlight Section - Interactive Soil Health Card Showcase -->
+<section class="spotlight-wrapper" id="soil-card">
+  <div class="spotlight-grid">
+    
+    <!-- Left: Product Story & Authority -->
+    <div>
+      <div class="spotlight-intro-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        District Laboratory Analysis
+      </div>
+      <h2 class="spotlight-title">
+        Official Soil Health Cards — Laboratory Analysis &amp; Guidance
+      </h2>
+      <p class="spotlight-desc">
+        Every sample is analyzed by trained laboratory personnel using standardized chemical and physical assays. You receive a verified report detailing available nutrients, soil reaction, and extension recommendations.
+      </p>
+
+      <ul class="spotlight-benefits-list">
+        <li class="spotlight-benefit-item">
+          <span class="spotlight-check-icon">&#10003;</span>
+          <span>Primary Macronutrients: Available N, P, K &amp; Soil Organic Carbon</span>
+        </li>
+        <li class="spotlight-benefit-item">
+          <span class="spotlight-check-icon">&#10003;</span>
+          <span>Chemical Balance: Soil pH (Acidity/Alkalinity) &amp; Electrical Conductivity (Salinity)</span>
+        </li>
+        <li class="spotlight-benefit-item">
+          <span class="spotlight-check-icon">&#10003;</span>
+          <span>Extension Guidance: Crop-focused advisory notes based on laboratory findings</span>
+        </li>
+        <li class="spotlight-benefit-item">
+          <span class="spotlight-check-icon">&#10003;</span>
+          <span>Convenient Access: Download your verified PDF report directly from your portal account</span>
+        </li>
+      </ul>
+
+      <a href="/login" class="btn btn-secondary" style="font-size: 1.05rem; padding: 0.85rem 1.85rem; background: var(--color-primary-green); color: #ffffff; border: none;">
+        Request Soil Test Appointment &rarr;
+      </a>
+    </div>
+
+    <!-- Right: Interactive Floating Soil Card -->
+    <div class="spotlight-card">
+      <div class="spotlight-card-header">
+        <div>
+          <h3 class="spotlight-card-title">Soil Health Card</h3>
+          <div class="spotlight-card-subtitle">Sample Report Preview &bull; Illustrative Plot Reading</div>
+        </div>
+        <span class="spotlight-card-badge">Sample Demonstration</span>
+      </div>
+
+      <!-- Interactive Crop Selection Pills -->
+      <div style="font-size: 0.82rem; font-weight: 700; color: var(--color-text-muted); margin-bottom: 0.4rem;">
+        Select Target Crop to View Advisory Principles:
+      </div>
+      <div class="crop-pill-group" id="crop-selector">
+        <button type="button" class="crop-pill active" data-crop="cotton">Cotton</button>
+        <button type="button" class="crop-pill" data-crop="sugarcane">Sugarcane</button>
+        <button type="button" class="crop-pill" data-crop="paddy">Paddy</button>
+        <button type="button" class="crop-pill" data-crop="maize">Maize</button>
+        <button type="button" class="crop-pill" data-crop="groundnut">Groundnut</button>
+      </div>
+
+      <!-- Demonstration Parameter Meters Notice -->
+      <div style="font-size: 0.78rem; font-weight: 700; color: var(--color-text-subtle); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.03em;">
+        Sample Laboratory Readings (For Demonstration):
+      </div>
+
+      <!-- Dynamic Nutrient Meters -->
+      <div class="nutrient-meters">
+        <div class="nutrient-row">
+          <span class="nutrient-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>
+            Available Nitrogen (N)
+          </span>
+          <span class="nutrient-tag nutrient-tag-medium" id="val-nitrogen">215 kg/ha &bull; Medium (Sample)</span>
+        </div>
+        <div class="nutrient-row">
+          <span class="nutrient-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>
+            Available Phosphorus (P)
+          </span>
+          <span class="nutrient-tag nutrient-tag-optimal" id="val-phosphorus">18.4 kg/ha &bull; Adequate (Sample)</span>
+        </div>
+        <div class="nutrient-row">
+          <span class="nutrient-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>
+            Available Potassium (K)
+          </span>
+          <span class="nutrient-tag nutrient-tag-high" id="val-potassium">310 kg/ha &bull; High (Sample)</span>
+        </div>
+        <div class="nutrient-row">
+          <span class="nutrient-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>
+            Soil Reaction (pH)
+          </span>
+          <span class="nutrient-tag nutrient-tag-optimal" id="val-ph">6.85 &bull; Neutral Loam (Sample)</span>
+        </div>
+      </div>
+
+      <!-- Dynamic Crop Advisory Principles Box (Scientifically Responsible) -->
+      <div class="dosage-advice-box" id="crop-advising-box">
+        <strong>Agronomic Advisory Focus (Cotton):</strong> Deep-taproot crop sensitive to nitrogen-potassium balance. Official reports calibrate nutrient application based on soil organic carbon and testing results.
+      </div>
+
+      <!-- Explicit Scientific Disclaimer -->
+      <div style="background: rgba(245, 158, 11, 0.08); border-left: 3px solid #d97706; padding: 0.6rem 0.85rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.78rem; color: #92400e; margin-bottom: 1.25rem; line-height: 1.45;">
+        <strong>Disclaimer:</strong> Numerical values and advisory notes shown above are illustrative examples. Actual fertilizer application must be based on a verified laboratory test report and guidance from a local agricultural extension officer.
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: var(--color-text-subtle);">
+        <span>Testing Lab: District Agricultural Soil Lab</span>
+        <span style="color: var(--color-primary-green); font-weight: 700;">PDF Certificate Preview</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 4-Step Process Section -->
+<section class="card" style="margin-top: 4.5rem;" id="how-it-works">
+  <div class="card-header">
+    <h2 class="card-title">How The Process Works</h2>
+  </div>
+  <p style="color: var(--color-text-muted); font-size: 1rem; margin-bottom: 1.5rem;">
+    Four straightforward steps from booking to your official report.
+  </p>
+  <div class="form-row">
+    <div style="background: var(--slate-100); padding: 1.25rem; border-radius: var(--radius-sm);">
+      <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 0.4rem;">1. Simple Registration</h3>
+      <p style="font-size: 0.9rem; color: var(--slate-600);">Farmers register with their full name, phone number, and a secure password.</p>
+    </div>
+    <div style="background: var(--slate-100); padding: 1.25rem; border-radius: var(--radius-sm);">
+      <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 0.4rem;">2. Book Appointment</h3>
+      <p style="font-size: 0.9rem; color: var(--slate-600);">Select land details, address, preferred collection date, and morning or afternoon time slot.</p>
+    </div>
+    <div style="background: var(--slate-100); padding: 1.25rem; border-radius: var(--radius-sm);">
+      <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 0.4rem;">3. Field Visit &amp; Lab Analysis</h3>
+      <p style="font-size: 0.9rem; color: var(--slate-600);">Lab administrators review, approve appointments, collect samples, and conduct testing.</p>
+    </div>
+    <div style="background: var(--slate-100); padding: 1.25rem; border-radius: var(--radius-sm);">
+      <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 0.4rem;">4. Official PDF Report</h3>
+      <p style="font-size: 0.9rem; color: var(--slate-600);">Once analysis is complete, verified PDF reports are uploaded and available for instant download.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Frequently Asked Questions (Interactive Clean Pill Accordion) -->
+<section class="faq-section" id="faq">
+  <div class="faq-header">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <p class="section-subtitle">Clear, transparent answers for farmers and agricultural coordinators</p>
+  </div>
+
+  <div class="faq-list">
+    
+    <!-- FAQ 1 (Default Open) -->
+    <div class="faq-item active">
+      <button type="button" class="faq-question">
+        <span>What parameters are tested in the official soil report?</span>
+        <span class="faq-toggle-icon">&minus;</span>
+      </button>
+      <div class="faq-answer">
+        Every official Soil Health Card tests primary macronutrients (Available Nitrogen N, Available Phosphorus P, Available Potassium K), secondary nutrients (Sulphur, Calcium, Magnesium), Soil pH (acidity/alkalinity), Electrical Conductivity (salinity), and Organic Carbon (OC percentage).
+      </div>
+    </div>
+
+    <!-- FAQ 2 -->
+    <div class="faq-item">
+      <button type="button" class="faq-question">
+        <span>When is the ideal time to book a soil sample collection?</span>
+        <span class="faq-toggle-icon">&#43;</span>
+      </button>
+      <div class="faq-answer">
+        The ideal window is 3 to 4 weeks before the onset of the sowing season (pre-Kharif in May/June or pre-Rabi in September/October), after field plowing and before applying any farmyard manure or chemical fertilizer.
+      </div>
+    </div>
+
+    <!-- FAQ 3 -->
+    <div class="faq-item">
+      <button type="button" class="faq-question">
+        <span>Do I need to be present at the field when the coordinator visits?</span>
+        <span class="faq-toggle-icon">&#43;</span>
+      </button>
+      <div class="faq-answer">
+        Yes, or designate an authorized family member to guide the officer along your field boundaries and survey points. The officer will collect 10 to 12 representative V-shaped core samples in a zig-zag pattern across your plot.
+      </div>
+    </div>
+
+    <!-- FAQ 4 -->
+    <div class="faq-item">
+      <button type="button" class="faq-question">
+        <span>How do I access and download my report once testing is complete?</span>
+        <span class="faq-toggle-icon">&#43;</span>
+      </button>
+      <div class="faq-answer">
+        Once the laboratory finishes the chemical analysis, your appointment status automatically shifts to "Completed" on your portal dashboard. You can view the summary directly or download the official signed PDF report to your phone with one click.
+      </div>
+    </div>
+
+    <!-- FAQ 5 (Accurate Extension Policy) -->
+    <div class="faq-item">
+      <button type="button" class="faq-question">
+        <span>Is there a fee for soil sample collection and testing?</span>
+        <span class="faq-toggle-icon">&#43;</span>
+      </button>
+      <div class="faq-answer">
+        Service fees and extension subsidies, if applicable, are governed by local agricultural department norms and project guidelines. Please consult your local extension coordinator or check appointment booking details for prevailing local policies.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Callout Banner -->
+<section class="card" style="margin-top: 4.5rem; text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(234, 243, 237, 0.85) 100%);">
+  <h2 style="font-size: 1.85rem; font-weight: 850; color: var(--color-text-main); margin-bottom: 0.65rem; letter-spacing: -0.02em;">
+    Ready to test your farm's soil?
+  </h2>
+  <p style="color: var(--color-text-muted); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; font-size: 1.05rem; line-height: 1.6;">
+    Takes less than 2 minutes to request an appointment. Local agricultural extension officers handle sample collection and certified lab analysis.
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+    <a href="/register" class="btn btn-primary" style="font-size: 1.02rem; padding: 0.85rem 1.8rem;">Create Farmer Account</a>
+    <a href="/login" class="btn btn-secondary" style="font-size: 1.02rem; padding: 0.85rem 1.8rem;">Farmer Login</a>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Check live backend health
+    const badge = document.getElementById('health-status-badge');
+    const msg = document.getElementById('health-status-msg');
+
+    try {
+      const health = await API.get('/api/health');
+      if (health && health.status === 'healthy') {
+        badge.className = 'badge badge-completed';
+        badge.textContent = 'System Healthy';
+        msg.textContent = health.message || 'All database and API services are operational.';
+      } else {
+        badge.className = 'badge badge-rejected';
+        badge.textContent = 'Degraded';
+        msg.textContent = 'Unexpected health response received from server.';
+      }
+    } catch (err) {
+      badge.className = 'badge badge-rejected';
+      badge.textContent = 'Offline';
+      msg.textContent = 'Backend service is currently unreachable.';
+    }
+
+    // 2. Redirect logged-in user directly to their respective portal
+    try {
+      const auth = await API.checkAuth();
+      if (auth && auth.authenticated && auth.user) {
+        const heroActions = document.getElementById('hero-actions-container');
+        if (heroActions) {
+          if (auth.user.role === 'farmer') {
+            heroActions.innerHTML = `
+              <a href="/farmer" class="btn-pill-arrow">
+                <span>Go to Farmer Dashboard</span>
+                <span class="btn-pill-circle">&rarr;</span>
+              </a>
+              <a href="/soil-guide" class="btn btn-outline" style="color: white; border-color: white;">📖 Soil Health Guide</a>
+            `;
+          } else if (auth.user.role === 'admin') {
+            heroActions.innerHTML = `
+              <a href="/admin" class="btn btn-secondary">Go to Admin Dashboard</a>
+              <a href="/soil-guide" class="btn btn-outline" style="color: white; border-color: white;">📖 Soil Health Guide</a>
+            `;
+          } else {
+            heroActions.innerHTML = `
+              <a href="/${auth.user.role.replace('_', '-')}" class="btn btn-secondary">Go to Workspace</a>
+            `;
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 3. Interactive Crop Selector on Soil Health Card Spotlight (Scientifically Responsible Advisory)
+    const cropAdvisories = {
+      cotton: 'Deep-taproot crop sensitive to nitrogen-potassium balance. Official reports calibrate nutrient application based on soil organic carbon and testing results.',
+      sugarcane: 'High-biomass crop requiring staged nutrient supply and balanced potassium. Recommendations depend on plant vs ratoon stage and lab findings.',
+      paddy: 'Wetland cultivation influences nutrient dynamics and phosphorus availability. Actual fertilizer doses are determined based on native soil test levels and water regime.',
+      maize: 'Rapid vegetative uptake demands balanced basal and top-dressed nutrition. Laboratory testing ensures optimal macronutrient ratios for cob development.',
+      groundnut: 'Biological nitrogen-fixer with high calcium and phosphorus needs for root nodulation and pegging. Dosing is tailored to laboratory assay results.'
+    };
+
+    const cropButtons = document.querySelectorAll('.crop-pill');
+    const adviceBox = document.getElementById('crop-advising-box');
+
+    cropButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        cropButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cropKey = btn.dataset.crop;
+        if (cropAdvisories[cropKey]) {
+          adviceBox.innerHTML = `<strong>Agronomic Advisory Focus (${btn.textContent}):</strong> ${cropAdvisories[cropKey]}`;
+        }
+      });
+    });
+
+    // 4. Interactive Pill Accordion FAQ
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+      const questionBtn = item.querySelector('.faq-question');
+      if (questionBtn) {
+        questionBtn.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          
+          // Close other items for smooth accordion UX
+          faqItems.forEach(other => {
+            other.classList.remove('active');
+            const toggle = other.querySelector('.faq-toggle-icon');
+            if (toggle) toggle.innerHTML = '&#43;';
+          });
+
+          if (!isActive) {
+            item.classList.add('active');
+            const toggle = item.querySelector('.faq-toggle-icon');
+            if (toggle) toggle.innerHTML = '&minus;';
+          }
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}

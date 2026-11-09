@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Crop Cultivation History — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1050px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">🌾 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Cultivation Journal</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">Crop Cultivation History</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Track multi-year crop rotations, seed varieties, sowing dates, and harvest yields.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="#new-crop-section" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">+ Log Crop Season</a>
+        <a href="/farmer" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.2); color: white;">Farmer Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Crop Table -->
+  <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+      <h3 style="margin: 0; color: var(--color-forest-green);">Historical Crop Rotations</h3>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <label for="filter-plot-select" style="font-size: 0.88rem; font-weight: 600;">Plot:</label>
+        <select id="filter-plot-select" class="form-control" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.88rem;">
+          <option value="">All Farm Plots</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="crops-loading" style="text-align: center; padding: 2rem; color: var(--slate-600);">
+      <span class="spinner" style="border-top-color: var(--primary);"></span> Loading crop history...
+    </div>
+
+    <div id="crops-empty" class="empty-state" style="display: none;">
+      <div class="empty-state-icon">🌱</div>
+      <h3 class="empty-state-title">No crop records logged yet</h3>
+      <p>Start recording your seasonal plantings below to build an accurate multi-year rotation journal.</p>
+    </div>
+
+    <div class="table-responsive" id="crops-table-container" style="display: none;">
+      <table class="table" id="crops-table">
+        <thead>
+          <tr>
+            <th>Year &amp; Season</th>
+            <th>Plot Name</th>
+            <th>Crop (Standardized)</th>
+            <th>Seed Variety</th>
+            <th>Sowing Date</th>
+            <th>Harvest Date</th>
+            <th>Yield Logged</th>
+          </tr>
+        </thead>
+        <tbody id="crops-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Log New Crop Form -->
+  <section id="new-crop-section" class="card" style="padding: 1.75rem;">
+    <h3 style="margin-top: 0; margin-bottom: 0.5rem; color: var(--color-forest-green);">➕ Log Seasonal Crop Cultivation</h3>
+    <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+      Record current or past plantings. Note that paddy and rice varieties are automatically unified under <strong>Paddy / Rice</strong>.
+    </p>
+
+    <form id="new-crop-form" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="crop_plot_id" class="form-label">Select Farm Plot <span class="required">*</span></label>
+          <select id="crop_plot_id" name="plot_id" class="form-control" required>
+            <option value="">-- Choose Plot --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="crop_name" class="form-label">Crop Name <span class="required">*</span></label>
+          <input type="text" id="crop_name" name="crop_name" class="form-control" placeholder="e.g. Paddy / Rice, Ragi, Sugarcane, Maize" required list="common-crops">
+          <datalist id="common-crops">
+            <option value="Paddy / Rice">
+            <option value="Finger Millet (Ragi)">
+            <option value="Sugarcane">
+            <option value="Maize">
+            <option value="Cotton">
+            <option value="Groundnut">
+            <option value="Red Gram (Tur / Arhar)">
+            <option value="Bengal Gram (Chana)">
+            <option value="Sunflower">
+            <option value="Vegetables">
+          </datalist>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="variety" class="form-label">Seed Variety</label>
+          <input type="text" id="variety" name="variety" class="form-control" placeholder="e.g. Sona Masuri (BPT 5204), Jyothi, Co 86032">
+        </div>
+        <div class="form-group">
+          <label for="crop_year" class="form-label">Year <span class="required">*</span></label>
+          <input type="number" id="crop_year" name="year" class="form-control" value="2026" min="2000" max="2100" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="crop_season" class="form-label">Cropping Season <span class="required">*</span></label>
+          <select id="crop_season" name="season" class="form-control" required>
+            <option value="Kharif" selected>Kharif (Monsoon / June–Oct)</option>
+            <option value="Rabi">Rabi (Winter / Nov–Feb)</option>
+            <option value="Summer">Summer (Zaid / Mar–May)</option>
+            <option value="Perennial">Perennial (Annual / Sugarcane / Orchard)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="quantity_unit" class="form-label">Harvest Yield Unit</label>
+          <select id="quantity_unit" name="quantity_unit" class="form-control">
+            <option value="Quintals" selected>Quintals (100 Kg)</option>
+            <option value="Tonnes">Tonnes (1,000 Kg)</option>
+            <option value="Bags">Bags (50 Kg Bags)</option>
+            <option value="Kg">Kilograms (Kg)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="sowing_date" class="form-label">Sowing / Planting Date</label>
+          <input type="date" id="sowing_date" name="sowing_date" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="harvest_date" class="form-label">Harvest Date (Expected / Actual)</label>
+          <input type="date" id="harvest_date" name="harvest_date" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="crop_notes" class="form-label">Agronomic Notes &amp; Observations</label>
+        <textarea id="crop_notes" name="notes" class="form-control" rows="2" placeholder="e.g. Direct seeded, applied farmyard manure 5 tonnes/acre, no major pest attacks."></textarea>
+      </div>
+
+      <button type="submit" id="btn-save-crop" class="btn btn-primary" style="margin-top: 0.5rem; padding: 0.75rem 1.5rem;">
+        Record Crop Season
+      </button>
+    </form>
+  </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const plotSelect = document.getElementById('crop_plot_id');
+  const filterSelect = document.getElementById('filter-plot-select');
+  const loading = document.getElementById('crops-loading');
+  const empty = document.getElementById('crops-empty');
+  const tableContainer = document.getElementById('crops-table-container');
+  const tbody = document.getElementById('crops-tbody');
+  const form = document.getElementById('new-crop-form');
+  const saveBtn = document.getElementById('btn-save-crop');
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialPlotFilter = urlParams.get('plot_id');
+
+  // Load farmer plots into dropdowns
+  async function loadPlotsDropdown() {
+    try {
+      const res = await API.get('/api/farm/plots');
+      const plots = res.plots || [];
+      plotSelect.innerHTML = '<option value="">-- Choose Plot --</option>';
+      filterSelect.innerHTML = '<option value="">All Farm Plots</option>';
+
+      plots.forEach(p => {
+        const opt1 = document.createElement('option');
+        opt1.value = p.id;
+        opt1.textContent = `${p.plot_name} (${p.survey_number}, ${p.area} ${p.area_unit})`;
+        plotSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = p.id;
+        opt2.textContent = p.plot_name;
+        if (initialPlotFilter && String(p.id) === String(initialPlotFilter)) {
+          opt2.selected = true;
+        }
+        filterSelect.appendChild(opt2);
+      });
+
+      if (initialPlotFilter) {
+        plotSelect.value = initialPlotFilter;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function loadCrops(plotId = '') {
+    loading.style.display = 'block';
+    empty.style.display = 'none';
+    tableContainer.style.display = 'none';
+
+    try {
+      const url = plotId ? `/api/farm/crops?plot_id=${plotId}` : '/api/farm/crops';
+      const res = await API.get(url);
+      const crops = res.crops || [];
+      loading.style.display = 'none';
+
+      if (crops.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      tableContainer.style.display = 'block';
+
+      crops.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(c.year)}</strong> — <span class="badge badge-approved" style="font-size: 0.8rem;">${escapeHtml(c.season)}</span></td>
+          <td>${escapeHtml(c.plot_name)}</td>
+          <td><strong style="color: var(--color-forest-green);">${escapeHtml(c.crop_name)}</strong></td>
+          <td>${escapeHtml(c.variety || '—')}</td>
+          <td>${escapeHtml(c.sowing_date || '—')}</td>
+          <td>${escapeHtml(c.harvest_date || '—')}</td>
+          <td>
+            ${c.actual_harvested_quantity > 0 
+              ? `<span style="font-weight: 700; color: var(--color-primary-green);">${c.actual_harvested_quantity} ${escapeHtml(c.quantity_unit)}</span>` 
+              : '<span style="color: var(--color-text-muted); font-size: 0.85rem;">In Progress</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      loading.style.display = 'none';
+      window.showAlert(err.message || 'Could not load crop records.', 'error');
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  filterSelect.addEventListener('change', () => {
+    loadCrops(filterSelect.value);
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const plot_id = plotSelect.value;
+    const crop_name = document.getElementById('crop_name').value.trim();
+    const variety = document.getElementById('variety').value.trim();
+    const year = parseInt(document.getElementById('crop_year').value);
+    const season = document.getElementById('crop_season').value;
+    const quantity_unit = document.getElementById('quantity_unit').value;
+    const sowing_date = document.getElementById('sowing_date').value || null;
+    const harvest_date = document.getElementById('harvest_date').value || null;
+    const notes = document.getElementById('crop_notes').value.trim();
+
+    if (!plot_id) {
+      window.showAlert('Please select a farm plot.', 'error');
+      return;
+    }
+    if (!crop_name) {
+      window.showAlert('Please enter the crop name.', 'error');
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    try {
+      await API.post('/api/farm/crops', {
+        plot_id,
+        crop_name,
+        variety,
+        year,
+        season,
+        quantity_unit,
+        sowing_date,
+        harvest_date,
+        notes,
+      });
+
+      window.showAlert(`Crop record created successfully (Standardized to '${crop_name.toLowerCase().includes("paddy") || crop_name.toLowerCase().includes("rice") ? "Paddy / Rice" : crop_name}')!`, 'success');
+      form.reset();
+      document.getElementById('crop_year').value = '2026';
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Record Crop Season';
+      loadCrops(filterSelect.value);
+    } catch (err) {
+      window.showAlert(err.message || 'Failed to record crop season.', 'error');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Record Crop Season';
+    }
+  });
+
+  await loadPlotsDropdown();
+  await loadCrops(initialPlotFilter || '');
+});
+</script>
+{% endblock %}
+

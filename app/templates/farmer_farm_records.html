@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block title %}Harvest &amp; Sales Records — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1050px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">📊 NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; Sales Ledger</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">Farm Harvest &amp; Sales Records</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Transparent yield tracking, storage stock balances, and verified gross sales revenue.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button id="btn-open-harvest-modal" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">+ Log Harvest Yield</button>
+        <button id="btn-open-sale-modal" class="btn btn-secondary btn-sm" style="background: var(--color-leaf-green); color: var(--color-forest-green); font-weight: 700;">+ Record Crop Sale</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Grid -->
+  <section class="stats-grid" style="margin-bottom: 1.75rem;">
+    <div class="stat-card">
+      <span class="stat-title">Farm Plots Registered</span>
+      <span class="stat-value" id="kpi-plots">0</span>
+      <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem;"><span id="kpi-acres">0</span> Total Acres</span>
+    </div>
+    <div class="stat-card stat-approved">
+      <span class="stat-title">Total Yield Harvested</span>
+      <span class="stat-value" id="kpi-harvested">0.00</span>
+      <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem;">Quintals</span>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #1976d2;">
+      <span class="stat-title">Quantity Sold</span>
+      <span class="stat-value" id="kpi-sold" style="color: #1976d2;">0.00</span>
+      <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem;">Quintals Dispatched</span>
+    </div>
+    <div class="stat-card stat-pending">
+      <span class="stat-title">Remaining Stock in Godown</span>
+      <span class="stat-value" id="kpi-stock">0.00</span>
+      <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem;">Available to Sell</span>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid var(--color-forest-green);">
+      <span class="stat-title">Gross Sales Revenue</span>
+      <span class="stat-value" id="kpi-revenue" style="color: var(--color-forest-green); font-size: 1.4rem;">₹0.00</span>
+      <span style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem;">Verified Gross Mandi / Buyer Inflow</span>
+    </div>
+  </section>
+
+  <!-- Segmented Tabs for Harvest vs Sales -->
+  <div class="farmer-tabs-container" role="tablist" style="margin-bottom: 1rem;">
+    <button type="button" class="farmer-tab-btn active" id="tab-show-harvests">🌾 Harvest Logs</button>
+    <button type="button" class="farmer-tab-btn" id="tab-show-sales">💰 Sales Transactions</button>
+  </div>
+
+  <!-- Harvest Ledger Section -->
+  <div id="harvest-section" class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+      <h3 style="margin: 0; color: var(--color-forest-green);">Yield Harvest History</h3>
+      <span style="font-size: 0.85rem; color: var(--color-text-muted);">Verified against seasonal crop cultivation</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Harvest Date</th>
+            <th>Crop Name</th>
+            <th>Season &amp; Year</th>
+            <th>Yield Quantity</th>
+            <th>Quality Grade</th>
+            <th>Storage Location</th>
+          </tr>
+        </thead>
+        <tbody id="harvest-tbody">
+          <tr><td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 1.5rem;">Loading harvest records...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Sales Ledger Section -->
+  <div id="sales-section" class="card" style="padding: 1.5rem; margin-bottom: 2rem; display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+      <div>
+        <h3 style="margin: 0; color: var(--color-forest-green);">Sales Transactions &amp; Revenue Inflow</h3>
+        <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--color-text-muted);">
+          Gross Sales Revenue = Quantity Sold × Price per Unit. (Note: In accordance with agricultural reporting guidelines, gross revenue is never represented as net profit).
+        </p>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Sale Date</th>
+            <th>Crop</th>
+            <th>Quantity Sold</th>
+            <th>Rate / Unit</th>
+            <th>Gross Sales Revenue</th>
+            <th>Buyer / Market</th>
+            <th>Payment Status</th>
+          </tr>
+        </thead>
+        <tbody id="sales-tbody">
+          <tr><td colspan="7" style="text-align: center; color: var(--color-text-muted); padding: 1.5rem;">Loading sales transactions...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Log Harvest -->
+<div id="modal-harvest" class="modal-backdrop" style="display: none;">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3 class="modal-title">🌾 Log Crop Harvest Yield</h3>
+      <button type="button" class="modal-close" id="btn-close-harvest-modal">&times;</button>
+    </div>
+    <form id="form-log-harvest" style="padding: 1.25rem;">
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label class="form-label">Crop Cultivation Record <span class="required">*</span></label>
+        <select id="harvest-crop-select" class="form-control" required>
+          <option value="">-- Choose Crop --</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Harvest Date <span class="required">*</span></label>
+          <input type="date" id="harvest-date" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Harvested Quantity <span class="required">*</span></label>
+          <input type="number" id="harvest-quantity" class="form-control" step="0.01" min="0.01" placeholder="e.g. 45.0" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Quality Grade</label>
+          <select id="harvest-grade" class="form-control">
+            <option value="Grade A" selected>Grade A (Premium)</option>
+            <option value="Grade B">Grade B (Standard)</option>
+            <option value="Grade C">Grade C (Commercial)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Storage Location</label>
+          <input type="text" id="harvest-storage" class="form-control" placeholder="e.g. Farm Godown #1">
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-harvest">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-save-harvest">Save Harvest</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Record Sale -->
+<div id="modal-sale" class="modal-backdrop" style="display: none;">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3 class="modal-title">💰 Record Crop Sale Transaction</h3>
+      <button type="button" class="modal-close" id="btn-close-sale-modal">&times;</button>
+    </div>
+    <form id="form-record-sale" style="padding: 1.25rem;">
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label class="form-label">Harvested Crop to Sell <span class="required">*</span></label>
+        <select id="sale-crop-select" class="form-control" required>
+          <option value="">-- Choose Crop with Available Stock --</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Sale Date <span class="required">*</span></label>
+          <input type="date" id="sale-date" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity to Sell <span class="required">*</span></label>
+          <input type="number" id="sale-quantity" class="form-control" step="0.01" min="0.01" placeholder="e.g. 20.0" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Price per Unit (₹) <span class="required">*</span></label>
+          <input type="number" id="sale-price" class="form-control" step="0.01" min="0.01" placeholder="e.g. 2250.00" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Buyer / Market <span class="required">*</span></label>
+          <input type="text" id="sale-buyer" class="form-control" placeholder="e.g. APMC Mandya" required>
+        </div>
+      </div>
+      <!-- Live Calculation Preview -->
+      <div style="background: var(--color-bg-light); padding: 0.8rem 1rem; border-radius: 6px; margin: 1rem 0; border: 1px dashed var(--color-border);">
+        <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+          <span>Calculated Gross Sales Revenue:</span>
+          <strong id="sale-gross-preview" style="color: var(--color-forest-green); font-size: 1.1rem;">₹0.00</strong>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-sale">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-save-sale">Record Sale</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const tabHarvests = document.getElementById('tab-show-harvests');
+  const tabSales = document.getElementById('tab-show-sales');
+  const harvestSec = document.getElementById('harvest-section');
+  const salesSec = document.getElementById('sales-section');
+
+  const harvestTbody = document.getElementById('harvest-tbody');
+  const salesTbody = document.getElementById('sales-tbody');
+
+  // KPI elements
+  const kpiPlots = document.getElementById('kpi-plots');
+  const kpiAcres = document.getElementById('kpi-acres');
+  const kpiHarvested = document.getElementById('kpi-harvested');
+  const kpiSold = document.getElementById('kpi-sold');
+  const kpiStock = document.getElementById('kpi-stock');
+  const kpiRevenue = document.getElementById('kpi-revenue');
+
+  // Modals
+  const modalHarvest = document.getElementById('modal-harvest');
+  const modalSale = document.getElementById('modal-sale');
+  const harvestCropSelect = document.getElementById('harvest-crop-select');
+  const saleCropSelect = document.getElementById('sale-crop-select');
+
+  const harvestDateInput = document.getElementById('harvest-date');
+  const saleDateInput = document.getElementById('sale-date');
+  const todayStr = new Date().toISOString().split('T')[0];
+  harvestDateInput.value = todayStr;
+  saleDateInput.value = todayStr;
+
+  tabHarvests.addEventListener('click', () => {
+    tabHarvests.classList.add('active');
+    tabSales.classList.remove('active');
+    harvestSec.style.display = 'block';
+    salesSec.style.display = 'none';
+  });
+
+  tabSales.addEventListener('click', () => {
+    tabSales.classList.add('active');
+    tabHarvests.classList.remove('active');
+    salesSec.style.display = 'block';
+    harvestSec.style.display = 'none';
+  });
+
+  // Modal open / close handlers
+  document.getElementById('btn-open-harvest-modal').addEventListener('click', () => modalHarvest.style.display = 'flex');
+  document.getElementById('btn-close-harvest-modal').addEventListener('click', () => modalHarvest.style.display = 'none');
+  document.getElementById('btn-cancel-harvest').addEventListener('click', () => modalHarvest.style.display = 'none');
+
+  document.getElementById('btn-open-sale-modal').addEventListener('click', () => modalSale.style.display = 'flex');
+  document.getElementById('btn-close-sale-modal').addEventListener('click', () => modalSale.style.display = 'none');
+  document.getElementById('btn-cancel-sale').addEventListener('click', () => modalSale.style.display = 'none');
+
+  // Live calculation for sale preview
+  const saleQtyInput = document.getElementById('sale-quantity');
+  const salePriceInput = document.getElementById('sale-price');
+  const saleGrossPreview = document.getElementById('sale-gross-preview');
+
+  function updateGrossPreview() {
+    const q = parseFloat(saleQtyInput.value) || 0;
+    const p = parseFloat(salePriceInput.value) || 0;
+    const rev = q * p;
+    saleGrossPreview.textContent = '₹' + rev.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  saleQtyInput.addEventListener('input', updateGrossPreview);
+  salePriceInput.addEventListener('input', updateGrossPreview);
+
+  async function loadData() {
+    try {
+      // 1. Load summary
+      const sum = await API.get('/api/farm/summary');
+      kpiPlots.textContent = sum.total_plots;
+      kpiAcres.textContent = sum.total_area_acres;
+      kpiHarvested.textContent = sum.total_harvested_quantity.toFixed(2);
+      kpiSold.textContent = sum.total_sold_quantity.toFixed(2);
+      kpiStock.textContent = sum.remaining_stock.toFixed(2);
+      kpiRevenue.textContent = '₹' + sum.total_gross_revenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      // 2. Load crops for dropdowns
+      const cropsRes = await API.get('/api/farm/crops');
+      const crops = cropsRes.crops || [];
+      harvestCropSelect.innerHTML = '<option value="">-- Choose Crop --</option>';
+      saleCropSelect.innerHTML = '<option value="">-- Choose Crop with Available Stock --</option>';
+
+      crops.forEach(c => {
+        const opt1 = document.createElement('option');
+        opt1.value = c.id;
+        opt1.textContent = `${c.crop_name} (${c.season} ${c.year} - ${c.plot_name})`;
+        harvestCropSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = c.id;
+        opt2.textContent = `${c.crop_name} (Harvested: ${c.actual_harvested_quantity} ${c.quantity_unit} - ${c.plot_name})`;
+        saleCropSelect.appendChild(opt2);
+      });
+
+      // 3. Load harvests
+      const harvestsRes = await API.get('/api/farm/harvests');
+      const harvests = harvestsRes.harvests || [];
+      if (harvests.length === 0) {
+        harvestTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">No harvest yields logged yet.</td></tr>';
+      } else {
+        harvestTbody.innerHTML = '';
+        harvests.forEach(h => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${escapeHtml(h.harvest_date)}</strong></td>
+            <td><strong style="color: var(--color-forest-green);">${escapeHtml(h.crop_name)}</strong> ${h.variety ? `(${escapeHtml(h.variety)})` : ''}</td>
+            <td>${escapeHtml(h.season)} ${h.year}</td>
+            <td><span class="badge badge-approved" style="font-size: 0.9rem;">${h.total_quantity} ${escapeHtml(h.quantity_unit)}</span></td>
+            <td>${escapeHtml(h.quality_grade || 'Standard')}</td>
+            <td>${escapeHtml(h.storage_location || 'Farm')}</td>
+          `;
+          harvestTbody.appendChild(tr);
+        });
+      }
+
+      // 4. Load sales
+      const salesRes = await API.get('/api/farm/sales');
+      const sales = salesRes.sales || [];
+      if (sales.length === 0) {
+        salesTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">No sales transactions recorded yet.</td></tr>';
+      } else {
+        salesTbody.innerHTML = '';
+        sales.forEach(s => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${escapeHtml(s.sale_date)}</td>
+            <td><strong>${escapeHtml(s.crop_name)}</strong></td>
+            <td>${s.quantity_sold} Quintals</td>
+            <td>₹${s.price_per_unit.toFixed(2)}</td>
+            <td><strong style="color: var(--color-forest-green);">₹${s.gross_revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></td>
+            <td>${escapeHtml(s.buyer_market)}</td>
+            <td><span class="badge badge-approved">${escapeHtml(s.payment_status)}</span></td>
+          `;
+          salesTbody.appendChild(tr);
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      window.showAlert('Error refreshing farm ledger.', 'error');
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  // Submit Harvest
+  document.getElementById('form-log-harvest').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const crop_record_id = harvestCropSelect.value;
+    const harvest_date = harvestDateInput.value;
+    const total_quantity = parseFloat(document.getElementById('harvest-quantity').value);
+    const quality_grade = document.getElementById('harvest-grade').value;
+    const storage_location = document.getElementById('harvest-storage').value;
+
+    if (!crop_record_id || isNaN(total_quantity) || total_quantity <= 0) {
+      window.showAlert('Please fill all required harvest fields.', 'error');
+      return;
+    }
+
+    try {
+      await API.post('/api/farm/harvests', {
+        crop_record_id,
+        harvest_date,
+        total_quantity,
+        quality_grade,
+        storage_location,
+      });
+      window.showAlert('Harvest yield recorded successfully!', 'success');
+      modalHarvest.style.display = 'none';
+      document.getElementById('form-log-harvest').reset();
+      loadData();
+    } catch (err) {
+      window.showAlert(err.message || 'Failed to save harvest.', 'error');
+    }
+  });
+
+  // Submit Sale
+  document.getElementById('form-record-sale').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const crop_record_id = saleCropSelect.value;
+    const sale_date = saleDateInput.value;
+    const quantity_sold = parseFloat(saleQtyInput.value);
+    const price_per_unit = parseFloat(salePriceInput.value);
+    const buyer_market = document.getElementById('sale-buyer').value.trim();
+
+    if (!crop_record_id || isNaN(quantity_sold) || isNaN(price_per_unit) || !buyer_market) {
+      window.showAlert('Please fill all required sales fields.', 'error');
+      return;
+    }
+
+    try {
+      const res = await API.post('/api/farm/sales', {
+        crop_record_id,
+        sale_date,
+        quantity_sold,
+        price_per_unit,
+        buyer_market,
+      });
+      window.showAlert(`Sale recorded! Gross Revenue: ₹${res.gross_revenue.toLocaleString('en-IN')}`, 'success');
+      modalSale.style.display = 'none';
+      document.getElementById('form-record-sale').reset();
+      saleGrossPreview.textContent = '₹0.00';
+      loadData();
+    } catch (err) {
+      window.showAlert(err.message || 'Failed to record sale.', 'error');
+    }
+  });
+
+  loadData();
+});
+</script>
+{% endblock %}
+

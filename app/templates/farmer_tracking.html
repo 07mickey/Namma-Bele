@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Live Sample Tracking — NAMMA BELE{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1050px; margin: 0 auto; padding: 1.5rem 1rem;">
+  <!-- Header Bar with Quick Nav -->
+  <div class="card admin-hero" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="portal-brand-header">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" class="portal-brand-logo">
+        <div>
+          <span class="admin-badge-user" style="display: inline-flex; margin-bottom: 0.4rem;">🛰️ NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ &bull; 13-Stage Audit Trail</span>
+          <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0 0 0.25rem 0;">Live Soil Sample Tracking</h1>
+          <p style="opacity: 0.9; margin: 0; font-size: 0.95rem;">Track your soil core from field collection to chemical analysis and Speed Post delivery.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="/farmer" class="btn btn-secondary btn-sm" style="background: white; color: var(--primary);">← Back to Farmer Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search / Quick Switch Box -->
+  <div class="card" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+    <form id="tracking-search-form" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+      <div style="flex: 1; min-width: 250px;">
+        <input type="text" id="tracking-query" class="form-control" placeholder="Enter Appointment ID or Sample Code (e.g. SMP-2026-00001)...">
+      </div>
+      <button type="submit" class="btn btn-primary" id="btn-track-search">Track Sample</button>
+      <button type="button" class="btn btn-secondary" id="btn-my-latest">Show My Latest Appointment</button>
+    </form>
+  </div>
+
+  <!-- Loading & Empty States -->
+  <div id="tracking-loading" style="text-align: center; padding: 2.5rem; color: var(--slate-600); display: none;">
+    <span class="spinner" style="border-top-color: var(--primary);"></span> Retrieving real-time stage progression...
+  </div>
+
+  <div id="tracking-empty" class="empty-state" style="display: none;">
+    <div class="empty-state-icon">🔍</div>
+    <h3 class="empty-state-title">No tracking details loaded</h3>
+    <p>Select an appointment from your portal or enter a valid sample code above.</p>
+  </div>
+
+  <!-- Main Tracking Container -->
+  <div id="tracking-results-card" style="display: none;">
+    <!-- Overview Banner -->
+    <div class="card" style="margin-bottom: 1.5rem; padding: 1.5rem; border-left: 6px solid var(--color-primary-green);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-text-muted); font-weight: 600;">Sample Barcode Code</span>
+          <h2 id="summary-sample-code" style="margin: 0.2rem 0 0.5rem 0; color: var(--color-forest-green); font-size: 1.7rem; font-family: monospace;">SMP-2026-00001</h2>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem; color: var(--color-text-muted);">
+            <span><strong>Appointment:</strong> #<span id="summary-appt-id"></span></span>
+            <span><strong>Location:</strong> <span id="summary-location"></span></span>
+            <span><strong>Current Status:</strong> <span id="summary-stage-name" class="badge badge-approved" style="font-size: 0.85rem;"></span></span>
+          </div>
+        </div>
+        <div id="summary-dispatch-box" style="background: var(--color-bg-light); padding: 0.75rem 1rem; border-radius: 6px; text-align: right; min-width: 200px; display: none;">
+          <div style="font-size: 0.8rem; color: var(--color-text-muted); font-weight: 600;">INDIA POST SPEED POST</div>
+          <div id="summary-tracking-number" style="font-weight: 700; color: var(--color-primary-green); font-size: 1.1rem; letter-spacing: 1px;"></div>
+          <div id="summary-dispatch-status" style="font-size: 0.85rem; color: var(--color-text-muted);">Consignment in Transit</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13-Stage Timeline Card -->
+    <div class="card" style="padding: 1.75rem;">
+      <h3 style="margin-top: 0; margin-bottom: 1.5rem; color: var(--color-forest-green); border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+        🌱 13-Stage Verification & Diagnostic Journey
+      </h3>
+
+      <div id="timeline-stage-list" style="display: flex; flex-direction: column; gap: 1rem; position: relative;">
+        <!-- Timeline items dynamically injected here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialApptId = urlParams.get('id');
+  const initialCode = urlParams.get('code');
+
+  const searchForm = document.getElementById('tracking-search-form');
+  const queryInput = document.getElementById('tracking-query');
+  const btnLatest = document.getElementById('btn-my-latest');
+
+  const loadingEl = document.getElementById('tracking-loading');
+  const emptyEl = document.getElementById('tracking-empty');
+  const resultsCard = document.getElementById('tracking-results-card');
+
+  const summaryCode = document.getElementById('summary-sample-code');
+  const summaryApptId = document.getElementById('summary-appt-id');
+  const summaryLocation = document.getElementById('summary-location');
+  const summaryStage = document.getElementById('summary-stage-name');
+  const dispatchBox = document.getElementById('summary-dispatch-box');
+  const trackingNumberEl = document.getElementById('summary-tracking-number');
+  const dispatchStatusEl = document.getElementById('summary-dispatch-status');
+  const timelineList = document.getElementById('timeline-stage-list');
+
+  async function loadTimeline(endpoint) {
+    loadingEl.style.display = 'block';
+    emptyEl.style.display = 'none';
+    resultsCard.style.display = 'none';
+
+    try {
+      const res = await API.get(endpoint);
+      const data = res.timeline;
+      renderTimeline(data);
+    } catch (err) {
+      loadingEl.style.display = 'none';
+      emptyEl.style.display = 'block';
+      window.showAlert(err.message || 'Could not load tracking timeline.', 'error');
+    }
+  }
+
+  function renderTimeline(data) {
+    loadingEl.style.display = 'none';
+    emptyEl.style.display = 'none';
+    resultsCard.style.display = 'block';
+
+    summaryCode.textContent = data.sample_code;
+    summaryApptId.textContent = data.appointment_id;
+    if (data.appointment) {
+      summaryLocation.textContent = data.appointment.address || data.appointment.land_details;
+    }
+    summaryStage.textContent = data.current_stage_name.replace(/_/g, ' ');
+
+    if (data.dispatch && data.dispatch.tracking_number) {
+      dispatchBox.style.display = 'block';
+      trackingNumberEl.textContent = data.dispatch.tracking_number;
+      dispatchStatusEl.textContent = `${data.dispatch.courier_service} (${data.dispatch.dispatch_status})`;
+    } else {
+      dispatchBox.style.display = 'none';
+    }
+
+    timelineList.innerHTML = '';
+
+    data.stages.forEach((stage, idx) => {
+      const item = document.createElement('div');
+      item.style.display = 'flex';
+      item.style.gap = '1.25rem';
+      item.style.alignItems = 'flex-start';
+      item.style.position = 'relative';
+
+      let iconBg = '#e0e0e0';
+      let iconColor = '#757575';
+      let iconSymbol = stage.stage_number;
+      let borderLeft = '2px solid #e0e0e0';
+
+      if (stage.status === 'COMPLETED') {
+        iconBg = 'var(--color-primary-green)';
+        iconColor = '#ffffff';
+        iconSymbol = '✓';
+        borderLeft = '2px solid var(--color-primary-green)';
+      } else if (stage.status === 'IN_PROGRESS') {
+        iconBg = 'var(--color-harvest-orange)';
+        iconColor = '#ffffff';
+        iconSymbol = '⏳';
+        borderLeft = '2px solid var(--color-harvest-orange)';
+      }
+
+      const circle = document.createElement('div');
+      circle.style.width = '36px';
+      circle.style.height = '36px';
+      circle.style.borderRadius = '50%';
+      circle.style.background = iconBg;
+      circle.style.color = iconColor;
+      circle.style.display = 'flex';
+      circle.style.alignItems = 'center';
+      circle.style.justifyContent = 'center';
+      circle.style.fontWeight = '700';
+      circle.style.fontSize = '0.95rem';
+      circle.style.flexShrink = '0';
+      circle.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+      circle.textContent = iconSymbol;
+
+      const body = document.createElement('div');
+      body.style.flex = '1';
+      body.style.background = stage.status === 'COMPLETED' ? '#f4f8f4' : (stage.status === 'IN_PROGRESS' ? '#fffaf0' : '#fafafa');
+      body.style.border = '1px solid ' + (stage.status === 'COMPLETED' ? '#c8e6c9' : (stage.status === 'IN_PROGRESS' ? '#ffe0b2' : '#eeeeee'));
+      body.style.borderRadius = '8px';
+      body.style.padding = '1rem 1.25rem';
+      body.style.marginBottom = '0.5rem';
+
+      const header = document.createElement('div');
+      header.style.display = 'flex';
+      header.style.justifyContent = 'space-between';
+      header.style.alignItems = 'center';
+      header.style.flexWrap = 'wrap';
+      header.style.gap = '0.5rem';
+      header.style.marginBottom = '0.35rem';
+
+      const title = document.createElement('h4');
+      title.style.margin = '0';
+      title.style.color = stage.status === 'COMPLETED' ? 'var(--color-forest-green)' : 'var(--color-text-main)';
+      title.style.fontSize = '1.05rem';
+      title.textContent = `Stage ${stage.stage_number}: ${stage.title}`;
+
+      const badge = document.createElement('span');
+      badge.className = stage.status === 'COMPLETED' ? 'badge badge-approved' : (stage.status === 'IN_PROGRESS' ? 'badge' : 'badge');
+      if (stage.status === 'IN_PROGRESS') {
+        badge.style.background = '#ffe0b2';
+        badge.style.color = '#e65100';
+      } else if (stage.status === 'PENDING') {
+        badge.style.background = '#eeeeee';
+        badge.style.color = '#757575';
+      }
+      badge.textContent = stage.status;
+
+      header.appendChild(title);
+      header.appendChild(badge);
+
+      const dept = document.createElement('div');
+      dept.style.fontSize = '0.8rem';
+      dept.style.color = 'var(--color-text-muted)';
+      dept.style.marginBottom = '0.4rem';
+      dept.textContent = `Department: ${stage.department}`;
+
+      const desc = document.createElement('p');
+      desc.style.margin = '0 0 0.5rem 0';
+      desc.style.fontSize = '0.92rem';
+      desc.style.color = 'var(--color-text-main)';
+      desc.style.lineHeight = '1.45';
+      desc.textContent = stage.description;
+
+      body.appendChild(header);
+      body.appendChild(dept);
+      body.appendChild(desc);
+
+      if (stage.timestamp) {
+        const time = document.createElement('div');
+        time.style.fontSize = '0.8rem';
+        time.style.color = 'var(--color-text-muted)';
+        time.textContent = `Timestamp: ${stage.timestamp}`;
+        body.appendChild(time);
+      }
+
+      item.appendChild(circle);
+      item.appendChild(body);
+      timelineList.appendChild(item);
+    });
+  }
+
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = queryInput.value.trim();
+    if (!q) return;
+    if (q.startsWith('SMP-') || q.includes('-')) {
+      loadTimeline(`/api/tracking/sample/${encodeURIComponent(q)}`);
+    } else {
+      loadTimeline(`/api/tracking/appointment/${encodeURIComponent(q)}`);
+    }
+  });
+
+  btnLatest.addEventListener('click', async () => {
+    try {
+      const res = await API.get('/api/appointments');
+      const list = res.appointments || [];
+      if (list.length > 0) {
+        loadTimeline(`/api/tracking/appointment/${list[0].id}`);
+      } else {
+        window.showAlert('You do not have any appointments yet.', 'info');
+      }
+    } catch (err) {
+      window.showAlert('Could not load latest appointment.', 'error');
+    }
+  });
+
+  // Initial load
+  if (initialCode) {
+    queryInput.value = initialCode;
+    loadTimeline(`/api/tracking/sample/${encodeURIComponent(initialCode)}`);
+  } else if (initialApptId) {
+    queryInput.value = initialApptId;
+    loadTimeline(`/api/tracking/appointment/${encodeURIComponent(initialApptId)}`);
+  } else {
+    // Attempt loading latest
+    btnLatest.click();
+  }
+});
+</script>
+{% endblock %}
+
