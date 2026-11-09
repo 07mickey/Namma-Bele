@@ -130,6 +130,12 @@
 body {
   font-family: var(--font-family);
   background-color: var(--surface-bg);
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(107, 138, 40, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 15%, rgba(175, 113, 55, 0.07) 0%, transparent 35%),
+    radial-gradient(circle at 50% 80%, rgba(107, 138, 40, 0.06) 0%, transparent 45%),
+    linear-gradient(180deg, #fdf9f2 0%, #f7f1e6 100%);
+  background-attachment: fixed;
   color: var(--dark);
   line-height: 1.5;
   font-size: 16px;
@@ -2653,5 +2659,293 @@ a:hover {
     padding: 1.5rem 1.25rem;
   }
 }
+
+/* ==========================================================================
+   MANYA Glassmorphic Navigation, Layout & Component Extensions
+   ========================================================================== */
+
+.glass-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: var(--glass-blur-header);
+  -webkit-backdrop-filter: var(--glass-blur-header);
+  border-bottom: 1px solid var(--namma-border);
+  box-shadow: 0 4px 20px -2px rgba(60, 33, 21, 0.05);
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--color-text-main);
+}
+
+.nav-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  transition: var(--transition-smooth);
+}
+
+.nav-brand-badge img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
+}
+
+.nav-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-brand-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--namma-primary);
+  letter-spacing: -0.015em;
+}
+
+.nav-brand-subtitle {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--namma-secondary);
+  letter-spacing: 0.03em;
+}
+
+.page-wrapper {
+  flex: 1;
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3.5rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.page-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--color-text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.page-subtitle {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  margin-top: 0.4rem;
+  max-width: 650px;
+}
+
+/* Glassmorphism Cards & Panels */
+.glass-card {
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  padding: 1.75rem;
+  transition: var(--transition-smooth);
+  position: relative;
+}
+
+.glass-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--namma-primary) 0%, var(--namma-secondary) 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  opacity: 0.9;
+}
+
+.glass-card-hover:hover {
+  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.glass-card-earth::before {
+  background: linear-gradient(90deg, var(--namma-secondary) 0%, var(--namma-accent) 100%);
+}
+
+.agri-tips-box {
+  background: rgba(253, 249, 242, 0.95);
+  border: 1px solid var(--namma-border);
+  border-left: 4px solid var(--namma-secondary);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.agri-tips-title {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--namma-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.agri-tips-list {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  padding-left: 1.25rem;
+  line-height: 1.6;
+}
+
+/* Glass Alerts */
+.glass-alert {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.92rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.glass-alert-offline {
+  background: rgba(254, 243, 199, 0.9);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #92400e;
+}
+
+.glass-alert-error {
+  background: rgba(254, 226, 226, 0.9);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #991b1b;
+}
+
+.glass-alert-success {
+  background: rgba(236, 253, 245, 0.9);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #065f46;
+}
+
+/* Glass Footer */
+.glass-footer {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: var(--glass-blur-header);
+  -webkit-backdrop-filter: var(--glass-blur-header);
+  border-top: 1px solid var(--namma-border);
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.glass-footer a {
+  color: var(--namma-primary);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+/* Admin Metrics Grid */
+.admin-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
+}
+
+.metric-card {
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  transition: var(--transition-smooth);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glass-shadow-lg);
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metric-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--namma-primary);
+  margin: 0.35rem 0 0.15rem;
+  line-height: 1;
+}
+
+.metric-sub {
+  font-size: 0.84rem;
+  color: var(--color-text-muted);
+}
+
+/* Admin & Portal Tables */
+.table-responsive {
+  overflow-x: auto;
+  width: 100%;
+}
+
+table.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.92rem;
+}
+
+table.admin-table th {
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  color: var(--namma-primary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  background: rgba(253, 249, 242, 0.7);
+  border-bottom: 1.5px solid var(--namma-border);
+}
+
+table.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--namma-border);
+  color: var(--color-text-main);
+  vertical-align: middle;
+}
+
+table.admin-table tr:hover td {
+  background: rgba(253, 249, 242, 0.5);
+}
+
+table.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
 
 

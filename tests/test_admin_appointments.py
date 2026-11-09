@@ -667,3 +667,31 @@ def test_kolkata_timezone_date_validation(client, app):
     assert res_future.status_code == 201
     assert res_future.get_json()["appointment"]["preferred_date"] == tomorrow_kolkata
 
+
+def test_admin_list_farmers_access(app, client):
+    """Verifies that GET /api/admin/farmers returns registered farmers and restricts non-admins."""
+    farmer_id = create_user_direct(app, "Ramesh Patil", "+919876543210", "Password123", role="farmer")
+    admin_id = create_user_direct(app, "Admin Lead", "+919999999999", "AdminPass123", role="admin")
+
+    # 1. Unauthenticated request rejected
+    res_unauth = client.get("/api/admin/farmers")
+    assert res_unauth.status_code in (401, 302)
+
+    # 2. Farmer request rejected with 403 Forbidden
+    login_user(client, "+919876543210", "Password123")
+    res_farmer = client.get("/api/admin/farmers")
+    assert res_farmer.status_code == 403
+
+    # 3. Admin request succeeds with 200 OK and list of farmers
+    client.post("/api/auth/logout")
+    login_user(client, "+919999999999", "AdminPass123")
+    res_admin = client.get("/api/admin/farmers")
+    assert res_admin.status_code == 200
+    data = res_admin.get_json()
+    assert data["status"] == "success"
+    farmers = data["data"]["farmers"]
+    assert len(farmers) >= 1
+    assert any(f["phone"] == "+919876543210" for f in farmers)
+
+
+

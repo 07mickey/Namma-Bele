@@ -3,60 +3,65 @@
 {% block title %}Activate Your Account — NAMMA BELE{% endblock %}
 
 {% block content %}
-<div class="auth-card" style="max-width: 480px; margin: 3rem auto; padding: 2rem;">
-  <div style="text-align: center; margin-bottom: 2rem;">
-    <div style="margin-bottom: 1rem;">
-      <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" style="height: 64px; width: auto; object-fit: contain;">
-      <div style="font-size: 1.15rem; font-weight: 850; color: var(--namma-brown, #3c2115); margin-top: 0.35rem; letter-spacing: 0.03em;">NAMMA BELE</div>
-      <div style="font-size: 0.82rem; font-weight: 700; color: var(--namma-terracotta, #af7137);">ನಮ್ಮ ಬೆಳೆ</div>
-    </div>
-    <h1 style="color: var(--color-primary-green); margin-bottom: 0.5rem; font-size: 1.65rem;">🌾 Activate Farmer Account</h1>
-    <p style="color: var(--color-text-muted); font-size: 0.95rem;">
-      Were you registered by a call center operator or field agent? Activate your online access and set your password here.
-    </p>
-  </div>
-
-  <!-- Step 1: Mobile Number Form -->
-  <form id="claim-step1-form" novalidate>
-    <div class="form-group" style="margin-bottom: 1.5rem;">
-      <label for="claim-phone" class="form-label" style="font-weight: 600;">Registered Mobile Number</label>
-      <input type="tel" id="claim-phone" name="phone" class="form-control" placeholder="+919876543210" required>
-      <small style="color: var(--color-text-muted); font-size: 0.85rem;">Standard 10-digit number or E.164 format with +91</small>
+<div class="auth-container" style="max-width: 480px; margin: 1.5rem auto 3rem;">
+  <div class="glass-card">
+    <div class="auth-header" style="text-align: center; margin-bottom: 1.5rem;">
+      <div style="text-align: center; margin-bottom: 0.5rem;">
+        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" style="height: 56px; width: auto; object-fit: contain;">
+        <div style="font-size: 1.15rem; font-weight: 850; color: var(--namma-brown, #3c2115); margin-top: 0.35rem; letter-spacing: 0.03em;">NAMMA BELE</div>
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--namma-terracotta, #af7137);">ನಮ್ಮ ಬೆಳೆ</div>
+      </div>
+      <h1 class="page-title" style="justify-content: center; font-size: 1.55rem; margin-bottom: 0.25rem;">Activate Farmer Account</h1>
+      <p class="page-subtitle" style="text-align: center; margin: 0 auto;">
+        Registered by a call center operator or field agent? Activate your online access and set your password here.
+      </p>
     </div>
 
-    <button type="submit" id="btn-send-otp" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-weight: 600;">
-      Send Verification OTP
-    </button>
-  </form>
+    <!-- Step 1: Mobile Number Form -->
+    <form id="claim-step1-form" novalidate>
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label for="claim-phone" class="form-label" style="font-weight: 600;">Registered Mobile Number <span class="required">*</span></label>
+        <input type="tel" id="claim-phone" name="phone" class="form-control" placeholder="+919876543210" required>
+        <div class="form-text">Standard 10-digit number or E.164 format with +91.</div>
+      </div>
 
-  <!-- Step 2: Verification & Password Form (Initially Hidden) -->
-  <form id="claim-step2-form" style="display: none;" novalidate>
-    <div class="alert alert-info" id="otp-sent-alert" style="margin-bottom: 1.5rem; font-size: 0.9rem;">
-      A 6-digit verification code has been sent via SMS to your registered mobile number.
+      <button type="submit" id="btn-send-otp" class="btn btn-primary btn-block" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
+        Send Verification OTP
+      </button>
+    </form>
+
+    <!-- Step 2: Verification & Password Form (Initially Hidden) -->
+    <form id="claim-step2-form" style="display: none;" novalidate>
+      <div class="glass-alert" id="otp-sent-alert" style="margin-bottom: 1.25rem; font-size: 0.9rem; background: rgba(245, 250, 246, 0.9); border: 1px solid var(--color-green-border, #E6E2D9);">
+        A 6-digit verification code has been sent via SMS to your registered mobile number.
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label for="claim-otp" class="form-label" style="font-weight: 600;">6-Digit SMS OTP <span class="required">*</span></label>
+        <input type="text" id="claim-otp" name="otp" class="form-control" maxlength="6" placeholder="e.g. 123456" required style="letter-spacing: 4px; font-size: 1.2rem; text-align: center;">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label for="claim-password" class="form-label" style="font-weight: 600;">Create New Password <span class="required">*</span></label>
+        <input type="password" id="claim-password" name="password" class="form-control" minlength="8" placeholder="At least 8 characters" required>
+        <div class="form-text">Must be at least 8 characters long.</div>
+      </div>
+
+      <button type="submit" id="btn-activate" class="btn btn-primary btn-block" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
+        Activate Account &amp; Log In
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; border-top: 1px solid var(--color-border, #E6E2D9); padding-top: 1rem;">
+      <p style="margin: 0; font-size: 0.9rem; color: var(--color-text-muted, #5C4A3E);">
+        Already have an active account? <a href="/login" style="color: var(--namma-green, #6B8A28); font-weight: 700; text-decoration: none;">Sign in here &rarr;</a>
+      </p>
     </div>
-
-    <div class="form-group" style="margin-bottom: 1.25rem;">
-      <label for="claim-otp" class="form-label" style="font-weight: 600;">6-Digit SMS OTP</label>
-      <input type="text" id="claim-otp" name="otp" class="form-control" maxlength="6" placeholder="e.g. 123456" required style="letter-spacing: 4px; font-size: 1.2rem; text-align: center;">
-    </div>
-
-    <div class="form-group" style="margin-bottom: 1.5rem;">
-      <label for="claim-password" class="form-label" style="font-weight: 600;">Create New Password</label>
-      <input type="password" id="claim-password" name="password" class="form-control" minlength="8" placeholder="At least 8 characters" required>
-    </div>
-
-    <button type="submit" id="btn-activate" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-weight: 600; background: var(--color-primary-green);">
-      Activate Account & Log In
-    </button>
-  </form>
-
-  <div style="text-align: center; margin-top: 1.5rem; border-top: 1px solid var(--color-border); padding-top: 1rem;">
-    <p style="margin: 0; font-size: 0.9rem; color: var(--color-text-muted);">
-      Already have an active account? <a href="/login" style="color: var(--color-primary-green); font-weight: 600;">Log in</a>
-    </p>
   </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const step1Form = document.getElementById('claim-step1-form');
@@ -70,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let activePhone = null;
 
   function normalizePhone(val) {
-    let clean = val.replace(/[\s\-()]/g, '');
+    let clean = (val || '').replace(/[\s\-()]/g, '');
     if (/^\d{10}$/.test(clean)) {
       clean = '+91' + clean;
     }
@@ -87,14 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btn = document.getElementById('btn-send-otp');
     btn.disabled = true;
-    btn.textContent = 'Sending OTP...';
+    btn.innerHTML = '<span class="spinner"></span> Sending OTP...';
 
     try {
-      const csrf = await API.getCsrfToken();
-      const res = await API.request('/api/auth/claim/initiate', {
-        method: 'POST',
-        body: JSON.stringify({ phone }),
-      });
+      const res = await API.post('/api/auth/claim/initiate', { phone });
 
       activeClaimToken = res.claim_token;
       activePhone = phone;
@@ -131,23 +132,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btn = document.getElementById('btn-activate');
     btn.disabled = true;
-    btn.textContent = 'Activating...';
+    btn.innerHTML = '<span class="spinner"></span> Activating...';
 
     try {
-      await API.request('/api/auth/claim/complete', {
-        method: 'POST',
-        body: JSON.stringify({
-          phone: activePhone,
-          claim_token: activeClaimToken,
-          otp: otp,
-          password: password,
-        }),
+      await API.post('/api/auth/claim/complete', {
+        phone: activePhone,
+        claim_token: activeClaimToken,
+        otp: otp,
+        password: password,
       });
 
       window.showAlert('Account activated successfully! Redirecting to login...', 'success');
       setTimeout(() => {
         window.location.href = '/login';
-      }, 1200);
+      }, 1000);
     } catch (err) {
       window.showAlert(err.message || 'Activation failed. Please check OTP.', 'error');
       btn.disabled = false;
@@ -157,4 +155,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 {% endblock %}
-

@@ -25,6 +25,7 @@
 <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1.5rem; background: var(--color-bg-light); border: 1px solid var(--color-border);">
   <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
     <a href="/admin" class="btn btn-secondary btn-sm" style="background: white;">📋 Appointments Queue</a>
+    <a href="#farmers-directory-section" class="btn btn-secondary btn-sm" style="background: white;">🧑‍🌾 Registered Farmers</a>
     <a href="/admin/tracking" class="btn btn-secondary btn-sm" style="background: white;">🛰️ 13-Stage Tracking</a>
     <a href="/admin/dispatch" class="btn btn-secondary btn-sm" style="background: white;">📬 Postal Dispatch Queue</a>
     <a href="/advisor" class="btn btn-secondary btn-sm" style="background: white;">🧑‍🔬 Expert Consultations</a>
@@ -136,6 +137,47 @@
       <button type="button" id="btn-prev-page" class="btn btn-secondary btn-sm" disabled>&larr; Previous</button>
       <button type="button" id="btn-next-page" class="btn btn-secondary btn-sm" disabled>Next &rarr;</button>
     </div>
+  </div>
+</section>
+
+<!-- Registered Farmers Directory (MANYA Design Integration) -->
+<section class="card glass-card" id="farmers-directory-section" style="margin-top: 2rem;">
+  <div class="card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h2 class="card-title">Registered Farmers Directory</h2>
+      <p class="text-muted" style="font-size: 0.88rem; margin-top: 0.25rem;">View registered community farmers, appointments count, and direct contact details</p>
+    </div>
+    <div>
+      <input 
+        type="text" 
+        id="farmer-directory-search" 
+        class="form-control" 
+        placeholder="Search farmers by name or phone..."
+        style="min-height: 38px; font-size: 0.9rem; width: 280px;"
+      >
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="admin-table table" id="farmers-directory-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Farmer Name</th>
+          <th>Mobile Phone</th>
+          <th>Total Bookings</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="farmers-directory-tbody">
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">
+            Loading registered farmers...
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </section>
 

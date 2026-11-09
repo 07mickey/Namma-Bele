@@ -5,6 +5,7 @@ from app.auth import admin_required, error_response
 from app.db import get_db
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin/appointments")
+admin_farmers_bp = Blueprint("admin_farmers", __name__, url_prefix="/api/admin/farmers")
 
 # Supported appointment statuses
 ALLOWED_STATUSES = ("Pending", "Approved", "Rejected", "Completed")
@@ -374,4 +375,46 @@ def update_appointment_status(appointment_id):
             "updated_at": updated_row["updated_at"],
         },
     }), 200
+
+
+# ============================================================================
+# REGISTERED FARMERS DIRECTORY
+# ============================================================================
+
+@admin_farmers_bp.route("", methods=["GET"])
+@admin_required
+def list_farmers():
+    """
+    Returns a list of all registered community farmers for administrative coordination.
+    Powers the MANYA registered farmers directory view.
+    """
+    db = get_db()
+    farmers = db.execute(
+        """
+        SELECT u.id, u.name, u.phone, u.created_at,
+               COUNT(a.id) AS appointment_count
+        FROM users u
+        LEFT JOIN appointments a ON u.id = a.farmer_id
+        WHERE u.role = 'farmer'
+        GROUP BY u.id
+        ORDER BY u.id DESC
+        """
+    ).fetchall()
+
+    return jsonify({
+        "status": "success",
+        "data": {
+            "farmers": [
+                {
+                    "id": f["id"],
+                    "name": f["name"],
+                    "phone": f["phone"],
+                    "created_at": f["created_at"],
+                    "appointment_count": f["appointment_count"]
+                }
+                for f in farmers
+            ]
+        }
+    }), 200
+
 

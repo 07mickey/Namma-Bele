@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template, request
 
 
 def create_app(test_config=None):
@@ -52,8 +52,9 @@ def create_app(test_config=None):
     app.register_blueprint(appointments_bp)
 
     # Register admin appointment management blueprint
-    from app.admin import admin_bp
+    from app.admin import admin_bp, admin_farmers_bp
     app.register_blueprint(admin_bp)
+    app.register_blueprint(admin_farmers_bp)
 
     # Register reports blueprint
     from app.reports import reports_bp
@@ -103,6 +104,17 @@ def create_app(test_config=None):
             message="Request payload exceeds maximum permitted size.",
             status_code=413,
         )
+
+    # Register error handler for 404 Not Found
+    @app.errorhandler(404)
+    def not_found(error):
+        if request.path.startswith("/api/"):
+            return error_response(
+                code="NOT_FOUND",
+                message="Resource not found.",
+                status_code=404,
+            )
+        return render_template("404.html"), 404
 
     # Register test-only authorization routes when in TESTING mode
     if app.config.get("TESTING"):

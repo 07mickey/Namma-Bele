@@ -594,8 +594,64 @@ document.addEventListener('DOMContentLoaded', async () => {
       .replace(/'/g, '&#039;');
   }
 
+  // 6. Registered Farmers Directory (MANYA Design Integration)
+  const farmersTbody = document.getElementById('farmers-directory-tbody');
+  const farmersSearchInput = document.getElementById('farmer-directory-search');
+  let loadedFarmers = [];
+
+  function renderFarmersDirectory(list) {
+    if (!farmersTbody) return;
+    if (!list || list.length === 0) {
+      farmersTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">No registered farmers found.</td></tr>`;
+      return;
+    }
+
+    farmersTbody.innerHTML = list.map(f => `
+      <tr>
+        <td style="font-weight: 700;">#${escapeHtml(f.id || '')}</td>
+        <td style="font-weight: 700; color: var(--color-text-main);">${escapeHtml(f.name || 'Farmer')}</td>
+        <td>📱 ${escapeHtml(f.phone || 'N/A')}</td>
+        <td><span class="badge" style="background: rgba(107, 138, 40, 0.12); color: var(--namma-green, #6B8A28);">${escapeHtml(f.appointment_count || 0)} Bookings</span></td>
+        <td><span class="status-badge status-completed">${escapeHtml(f.account_status || 'ACTIVE')}</span></td>
+        <td>
+          <a href="tel:${escapeHtml(f.phone || '')}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.82rem; text-decoration: none;">
+            📞 Call
+          </a>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function loadFarmersDirectory() {
+    if (!farmersTbody) return;
+    try {
+      const res = await API.get('/api/admin/farmers');
+      if (res && res.farmers) {
+        loadedFarmers = res.farmers;
+        renderFarmersDirectory(loadedFarmers);
+      }
+    } catch (err) {
+      console.warn('Failed to load farmers directory:', err);
+      if (farmersTbody) {
+        farmersTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--slate-500); padding: 1.5rem;">Could not load farmers list.</td></tr>`;
+      }
+    }
+  }
+
+  if (farmersSearchInput) {
+    farmersSearchInput.addEventListener('input', () => {
+      const q = (farmersSearchInput.value || '').toLowerCase().trim();
+      const filtered = loadedFarmers.filter(f => 
+        (f.name || '').toLowerCase().includes(q) ||
+        (f.phone || '').includes(q)
+      );
+      renderFarmersDirectory(filtered);
+    });
+  }
+
   // Initial loads
   await loadStatistics();
   await loadQueue(1);
+  await loadFarmersDirectory();
 });
 
