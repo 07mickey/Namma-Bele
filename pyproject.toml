@@ -1,0 +1,12 @@
+[project]
+name = "namma-bele"
+version = "1.0.0"
+description = "NAMMA BELE (ನಮ್ಮ ಬೆಳೆ) - Community Soil Testing & Advisory Platform"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "Flask>=3.0.0",
+]
+
+[tool.vercel]
+entrypoint = "run:app"
