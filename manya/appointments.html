@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Appointments - Soil Testing Portal</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .appointments-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+      padding: 0.4rem;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      width: fit-content;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .filter-btn:hover {
+      color: var(--color-primary-green);
+    }
+
+    .filter-btn.active {
+      background: var(--color-white);
+      color: var(--color-primary-green);
+      box-shadow: 0 2px 8px rgba(27, 67, 50, 0.12);
+    }
+
+    .appointment-card {
+      margin-bottom: 1.25rem;
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .appointment-id {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--color-text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      letter-spacing: -0.015em;
+    }
+
+    .appointment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.15rem;
+      padding: 0.85rem 0;
+      border-top: 1px solid rgba(110, 140, 120, 0.12);
+      border-bottom: 1px solid rgba(110, 140, 120, 0.12);
+    }
+
+    .card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Glass Navigation -->
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">
+        <span class="nav-brand-badge">
+          <img src="assets/logo.svg" alt="SoilTest Portal Logo" width="42" height="42">
+        </span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">SoilTest Portal</span>
+          <span class="nav-brand-subtitle">Community Agricultural Support</span>
+        </div>
+      </a>
+      <ul class="nav-links" id="main-nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+        <li><a href="book-appointment.html" class="nav-link">Book Test</a></li>
+        <li><a href="appointments.html" class="nav-link active">Appointments</a></li>
+        <li><a href="reports.html" class="nav-link">My Reports</a></li>
+        <li><button type="button" onclick="Auth.logout()" class="btn btn-secondary logout-btn" style="padding: 0.35rem 0.85rem; font-size: 0.85rem; min-height: 36px;">Sign Out</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-wrapper">
+    
+    <!-- Page Header -->
+    <div class="appointments-header">
+      <div>
+        <h1 class="page-title">
+          My Soil-Testing Appointments
+        </h1>
+        <p class="page-subtitle">Track status and coordinator visits for all your requested tests</p>
+      </div>
+      <div>
+        <a href="book-appointment.html" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Book New Soil Test
+        </a>
+      </div>
+    </div>
+
+    <!-- Alert / Notice Area -->
+    <div id="appointments-alert" class="glass-alert" style="display: none;"></div>
+
+    <!-- Status Filter Bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All Appointments</button>
+      <button class="filter-btn" data-filter="pending">Pending</button>
+      <button class="filter-btn" data-filter="approved">Approved</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+      <button class="filter-btn" data-filter="rejected">Rejected</button>
+    </div>
+
+    <!-- Appointments Container -->
+    <div id="appointments-list">
+      <p style="color: var(--color-text-muted);">Loading your appointment records...</p>
+    </div>
+
+  </main>
+
+  <!-- Glass Footer -->
+  <footer class="glass-footer">
+    <p>Soil Testing Appointment &amp; Report Access Portal • Appointments</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    Auth.requireAuth();
+
+    const alertBanner = document.getElementById('appointments-alert');
+    const container = document.getElementById('appointments-list');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    // Check for ?booked=1 param
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('booked') === '1') {
+      alertBanner.className = 'glass-alert glass-alert-success';
+      alertBanner.innerHTML = '<strong>Request Received!</strong> Your soil-test appointment request has been submitted with status <span class="status-badge status-pending" style="font-size:0.75rem; margin-left:4px;">Pending</span>. The coordinator will review your field slot shortly.';
+      alertBanner.style.display = 'flex';
+    }
+
+    let allAppointments = [];
+    let currentFilter = 'all';
+
+    function getStatusClass(status) {
+      const s = (status || '').toLowerCase().trim();
+      if (s === 'approved') return 'status-approved';
+      if (s === 'completed') return 'status-completed';
+      if (s === 'rejected') return 'status-rejected';
+      return 'status-pending';
+    }
+
+    function renderAppointments(list) {
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="glass-card" style="text-align: center; padding: 3rem 1.5rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--color-text-main);">
+              No appointments found
+            </h3>
+            <p style="color: var(--color-text-muted); margin-bottom: 1.5rem; max-width: 420px; margin-left: auto; margin-right: auto;">
+              ${currentFilter === 'all' ? "You haven't requested any soil tests yet. Schedule your first test appointment easily." : `No appointments with status "${Validation.escapeHtml(currentFilter.toUpperCase())}".`}
+            </p>
+            <a href="book-appointment.html" class="btn btn-primary">Book a Soil Test</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(apt => {
+        const status = apt.status || 'Pending';
+        const statusClass = getStatusClass(status);
+        const isCompleted = status.toLowerCase() === 'completed';
+
+        return `
+          <div class="glass-card appointment-card glass-card-hover" data-status="${Validation.escapeHtml(status.toLowerCase())}">
+            <div class="card-top">
+              <div class="appointment-id">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-primary-green);">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                ${Validation.escapeHtml(apt.land_details || 'Field Land Details')}
+              </div>
+              <span class="status-badge ${statusClass}">${Validation.escapeHtml(status)}</span>
+            </div>
+
+            <div class="appointment-grid">
+              <div>
+                <span class="detail-label" style="display:block; font-size:0.75rem; color:var(--color-text-subtle); text-transform:uppercase; font-weight:700;">Location / Address</span>
+                <span style="font-size:0.95rem; font-weight:600; color:var(--color-text-main);">${Validation.escapeHtml(apt.address || 'Address provided')}</span>
+              </div>
+              <div>
+                <span class="detail-label" style="display:block; font-size:0.75rem; color:var(--color-text-subtle); text-transform:uppercase; font-weight:700;">Preferred Date &amp; Slot</span>
+                <span style="font-size:0.95rem; font-weight:600; color:var(--color-text-main);">${Validation.escapeHtml(apt.preferred_date || 'Date N/A')} (${Validation.escapeHtml(apt.preferred_time || 'General')})</span>
+              </div>
+              ${apt.notes ? `
+              <div>
+                <span class="detail-label" style="display:block; font-size:0.75rem; color:var(--color-text-subtle); text-transform:uppercase; font-weight:700;">Crop / Soil Notes</span>
+                <span style="font-size:0.9rem; color:var(--color-text-muted);">${Validation.escapeHtml(apt.notes)}</span>
+              </div>` : ''}
+            </div>
+
+            <div class="card-bottom">
+              <div>
+                <span style="font-weight:600;">Request Reference: #${Validation.escapeHtml(apt.id || 'N/A')}</span>
+                ${apt.created_at ? `<span style="margin-left: 0.75rem; color: var(--color-text-subtle); font-size: 0.82rem;">(${new Date(apt.created_at).toLocaleDateString()})</span>` : ''}
+              </div>
+              ${isCompleted ? `
+                <a href="reports.html?appointment_id=${encodeURIComponent(apt.id)}" class="btn btn-primary" style="padding: 0.45rem 1.15rem; font-size: 0.88rem; min-height: 38px;">
+                  📄 Access Official Report
+                </a>
+              ` : `
+                <span style="font-size: 0.85rem; color: var(--color-text-subtle);">
+                  ${status.toLowerCase() === 'pending' ? 'Awaiting coordinator approval' : status.toLowerCase() === 'approved' ? 'Sample collection scheduled on field' : 'Appointment concluded'}
+                </span>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function fetchAppointments() {
+      const result = await API.getFarmerAppointments();
+
+      if (result.offline) {
+        alertBanner.className = 'glass-alert glass-alert-offline';
+        alertBanner.innerHTML = `<strong>Backend Offline:</strong> ${Validation.escapeHtml(result.error)}<br><span style="font-size: 0.85rem;">[Notice: Waiting for Person 1's Flask API to serve appointment data.]</span>`;
+        alertBanner.style.display = 'flex';
+        container.innerHTML = `
+          <div class="glass-card" style="text-align: center; padding: 2.5rem 1.5rem;">
+            <p style="color: var(--color-text-muted); margin-bottom: 1rem;">
+              The backend server is currently offline. Once Person 1 starts the backend at http://127.0.0.1:5000, your live appointments will appear here.
+            </p>
+            <a href="book-appointment.html" class="btn btn-secondary">Request New Appointment</a>
+          </div>
+        `;
+        return;
+      }
+
+      if (!result.ok) {
+        alertBanner.className = 'glass-alert glass-alert-error';
+        alertBanner.innerHTML = `<strong>Error:</strong> ${Validation.escapeHtml(result.error || 'Failed to load appointments.')}`;
+        alertBanner.style.display = 'flex';
+        container.innerHTML = '';
+        return;
+      }
+
+      allAppointments = result.data?.appointments || [];
+      // Defensively sort appointments by id descending
+      allAppointments.sort((a, b) => (b.id || 0) - (a.id || 0));
+      renderAppointments(allAppointments);
+    }
+
+    // Filter bar tab handling
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+
+        if (currentFilter === 'all') {
+          renderAppointments(allAppointments);
+        } else {
+          const filtered = allAppointments.filter(apt => (apt.status || '').toLowerCase() === currentFilter);
+          renderAppointments(filtered);
+        }
+      });
+    });
+
+    fetchAppointments();
+  </script>
+</body>
+</html>

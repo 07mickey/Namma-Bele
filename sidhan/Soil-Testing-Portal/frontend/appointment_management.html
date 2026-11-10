@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appointment Management – Admin Panel</title>
+    <!-- Modern fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin_dashboard.css" />
+    <link rel="stylesheet" href="appointment_management.css" />
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar (reuse from dashboard) -->
+        <nav class="sidebar" aria-label="Admin navigation">
+            <div class="sidebar-header"><h1>Admin</h1></div>
+            <ul class="nav-links">
+                <li><a href="admin_dashboard.html"><span class="icon">🏠</span> Dashboard</a></li>
+                <li><a href="farmer_management.html"><span class="icon">👨‍🌾</span> Farmers</a></li>
+                <li><a href="appointment_management.html" class="active"><span class="icon">📅</span> Appointments</a></li>
+                <li><a href="report_management.html"><span class="icon">📄</span> Reports</a></li>
+                <li class="logout"><a href="admin_login.html" id="logoutBtn"><span class="icon">🚪</span> Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <header class="top-bar">
+                <h2>Appointment Management</h2>
+                <div class="profile" id="profileSection">
+                    <img src="https://via.placeholder.com/40" alt="Admin avatar" class="avatar" />
+                    <span class="admin-name">Admin Name</span>
+                </div>
+            </header>
+
+            <section class="section-header">
+                <p class="description">View and manage soil‑test appointment requests.</p>
+                <div class="controls">
+                    <input type="text" id="appointmentSearch" placeholder="Search by ID or farmer name/email..." class="search-input" />
+                    <select id="statusFilter" class="status-select">
+                        <option value="All">All</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="appointment-table-section">
+                <table class="appointment-table">
+                    <thead>
+                        <tr>
+                            <th>Appointment ID</th>
+                            <th>Farmer Name</th>
+                            <th>Farmer Email</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentTableBody">
+                        <!-- rows injected by JS -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state hidden">
+                    No appointments match the current search/filter.
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal" aria-label="Close details view">✖</button>
+            <h3 id="modalTitle">Appointment Details</h3>
+            <div class="details-body" id="detailsBody"></div>
+        </div>
+    </div>
+
+    <script src="appointment_management.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farmer Management – Admin Panel</title>
+    <!-- Modern fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin_dashboard.css" />
+    <link rel="stylesheet" href="farmer_management.css" />
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar (reuse from dashboard) -->
+        <nav class="sidebar" aria-label="Admin navigation">
+            <div class="sidebar-header"><h1>Admin</h1></div>
+            <ul class="nav-links">
+                <li><a href="admin_dashboard.html"><span class="icon">🏠</span> Dashboard</a></li>
+                <li><a href="farmer_management.html" class="active"><span class="icon">👨‍🌾</span> Farmers</a></li>
+                <li><a href="appointment_management.html"><span class="icon">📅</span> Appointments</a></li>
+                <li><a href="report_management.html"><span class="icon">📄</span> Reports</a></li>
+                <li class="logout"><a href="admin_login.html" id="logoutBtn"><span class="icon">🚪</span> Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <header class="top-bar">
+                <h2>Farmer Management</h2>
+                <div class="profile" id="profileSection">
+                    <img src="https://via.placeholder.com/40" alt="Admin avatar" class="avatar" />
+                    <span class="admin-name">Admin Name</span>
+                </div>
+            </header>
+
+            <section class="section-header">
+                <p class="description">Manage registered farmers. Search, view details, and review related appointments.</p>
+                <input type="text" id="farmerSearch" placeholder="Search by name or email..." class="search-input" />
+            </section>
+
+            <section class="farmer-table-section">
+                <table class="farmer-table">
+                    <thead>
+                        <tr>
+                            <th>Farmer ID</th>
+                            <th>Farmer Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Registration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="farmerTableBody">
+                        <!-- Rows inserted by JS (demo data) -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state hidden">
+                    No farmers found. Use the search box to filter or await data from the backend.
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Farmer Details Modal (hidden until a View button is clicked) -->
+    <div id="detailsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal" aria-label="Close details view">✖</button>
+            <h3 id="modalTitle">Farmer Details</h3>
+            <div class="details-body" id="detailsBody">
+                <!-- Filled by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="farmer_management.js"></script>
+</body>
+</html>

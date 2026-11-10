@@ -1,0 +1,244 @@
+/* farmer_management.css */
+
+/* Section header banner with Green Crop Field Background */
+.section-header {
+    position: relative;
+    background: url('images/farmer_bg.jpg') center/cover no-repeat;
+    color: #FFFFFF;
+    padding: 2.2rem 2.4rem;
+    border-radius: var(--radius-lg, 16px);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(30, 60, 35, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.section-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(27, 56, 32, 0.85) 0%, rgba(46, 125, 50, 0.72) 100%);
+    z-index: 1;
+}
+
+.section-header > * {
+    position: relative;
+    z-index: 2;
+}
+
+.section-header .description {
+    color: #E8F5E9;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.search-input {
+    width: 100%;
+    max-width: 360px;
+    padding: 0.75rem 1.1rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1F2D1F;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    outline: none;
+    transition: all 0.25s ease;
+}
+
+.search-input:focus {
+    background: #FFFFFF;
+    border-color: #81C784;
+    box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.4);
+}
+
+/* Farmer Table Section */
+.farmer-table-section {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(30, 60, 35, 0.08);
+    border: 1px solid #E0E8E1;
+    overflow-x: auto;
+}
+
+.farmer-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.farmer-table th,
+.farmer-table td {
+    padding: 1rem 1.2rem;
+    text-align: left;
+    border-bottom: 1px solid #EAEFEA;
+    font-size: 0.95rem;
+}
+
+.farmer-table th {
+    background: #E8F0E9;
+    color: #1F2D1F;
+    font-family: var(--font-primary, 'Poppins', sans-serif);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.farmer-table th:first-child {
+    border-top-left-radius: 8px;
+}
+
+.farmer-table th:last-child {
+    border-top-right-radius: 8px;
+}
+
+.farmer-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.farmer-table tbody tr:hover {
+    background: #F1F8F2;
+}
+
+.farmer-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Action button */
+.action-btn {
+    background: var(--primary-color, #2E7D32);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-primary, 'Poppins', sans-serif);
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+}
+
+.action-btn:hover {
+    background: var(--primary-hover, #1B5E20);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+    margin: 2rem 0;
+    color: #4A5D4E;
+    text-align: center;
+    font-size: 1rem;
+    padding: 2rem;
+    background: #F8FAF8;
+    border-radius: 8px;
+    border: 1px dashed #C8D6C9;
+}
+
+/* Modal Window */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 30, 18, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background: #FFFFFF;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 520px;
+    padding: 2rem;
+    position: relative;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    border: 1px solid #E0E8E1;
+    animation: modalPop 0.25s ease-out;
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.close-modal {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.2rem;
+    background: #F0F4F1;
+    border: none;
+    font-size: 1.1rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4A5D4E;
+    transition: all 0.2s;
+}
+
+.close-modal:hover {
+    background: #C62828;
+    color: #FFFFFF;
+}
+
+.modal h3 {
+    font-family: var(--font-primary, 'Poppins', sans-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--primary-color, #2E7D32);
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid #E8F0E9;
+}
+
+.details-body p {
+    margin: 0.7rem 0;
+    color: #2D3A2F;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.details-body strong {
+    color: #1B3820;
+    min-width: 140px;
+    display: inline-block;
+}
+
+/* Responsive */
+@media (max-width: 650px) {
+    .section-header {
+        padding: 1.5rem;
+    }
+    .search-input {
+        max-width: 100%;
+    }
+    .farmer-table th, .farmer-table td {
+        padding: 0.75rem 0.6rem;
+        font-size: 0.88rem;
+    }
+}

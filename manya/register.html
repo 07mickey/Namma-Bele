@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Registration - Soil Testing Portal</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .auth-container {
+      max-width: 480px;
+      margin: 1.5rem auto 3rem;
+    }
+    .auth-header {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+    .auth-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 0.75rem;
+      border-radius: var(--radius-md);
+      background: var(--color-primary-green-light);
+      color: var(--color-primary-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-green-border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Glass Navigation -->
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">
+        <span class="nav-brand-badge">
+          <img src="assets/logo.svg" alt="SoilTest Portal Logo" width="42" height="42">
+        </span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">SoilTest Portal</span>
+          <span class="nav-brand-subtitle">Community Agricultural Support</span>
+        </div>
+      </a>
+      <ul class="nav-links" id="main-nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="login.html" class="nav-link">Sign In</a></li>
+        <li><a href="register.html" class="nav-link active">Register</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-wrapper">
+    <div class="auth-container">
+      
+      <div class="glass-card">
+        <div class="auth-header">
+          <div class="auth-icon" style="background: transparent; border: none; width: 56px; height: 56px;">
+            <img src="assets/logo.svg" alt="SoilTest Portal Logo" width="56" height="56">
+          </div>
+          <h1 class="page-title" style="justify-content: center; font-size: 1.7rem;">Farmer Registration</h1>
+          <p class="page-subtitle" style="margin-left: auto; margin-right: auto; text-align: center;">Create an account to book soil tests and download official reports</p>
+        </div>
+
+        <!-- Alert Notice Banner -->
+        <div id="alert-banner" class="glass-alert" style="display: none;"></div>
+
+        <!-- Auto-Fill Quick Registration Card -->
+        <div class="demo-credentials-box" style="margin-bottom: 1.35rem; padding: 0.75rem 1rem; background: rgba(245, 250, 246, 0.9); border: 1px dashed rgba(30, 126, 72, 0.35); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem;">
+          <div>
+            <span style="font-weight: 800; color: var(--color-primary-green);">⚡ Test Registration:</span>
+            <span style="color: var(--color-text-muted); margin-left: 4px;">Ramesh Patil &bull; 9876543210</span>
+          </div>
+          <button type="button" id="autofill-reg-btn" class="btn btn-secondary" style="min-height: 32px; padding: 0.25rem 0.85rem; font-size: 0.78rem;">
+            Auto-Fill
+          </button>
+        </div>
+
+        <form id="registration-form" novalidate>
+          
+          <!-- Full Name -->
+          <div class="form-group">
+            <label for="name" class="form-label">Full Name <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="name" 
+              name="name" 
+              class="form-control" 
+              value="Ramesh Patil"
+              placeholder="e.g. Ramesh Patil" 
+              required
+              autocomplete="name"
+            >
+            <div id="name-error" class="form-error"></div>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="form-group">
+            <label for="phone" class="form-label">Mobile Phone Number <span class="required">*</span></label>
+            <input 
+              type="tel" 
+              id="phone" 
+              name="phone" 
+              class="form-control" 
+              value="9876543210"
+              placeholder="10-digit mobile number" 
+              maxlength="10"
+              required
+              autocomplete="tel"
+            >
+            <div class="form-hint">Your 10-digit mobile number is your login identifier.</div>
+            <div id="phone-error" class="form-error"></div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password" class="form-label">Create Password <span class="required">*</span></label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="form-control" 
+              value="password123"
+              placeholder="Minimum 6 characters" 
+              minlength="6"
+              required
+              autocomplete="new-password"
+            >
+            <div id="password-error" class="form-error"></div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label for="confirm_password" class="form-label">Confirm Password <span class="required">*</span></label>
+            <input 
+              type="password" 
+              id="confirm_password" 
+              name="confirm_password" 
+              class="form-control" 
+              value="password123"
+              placeholder="Re-enter your password" 
+              required
+              autocomplete="new-password"
+            >
+            <div id="confirm_password-error" class="form-error"></div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-block" style="margin-top: 1.5rem; font-size: 1.02rem;">
+            Register as Farmer
+          </button>
+
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.92rem; color: var(--color-text-muted);">
+          Already registered? <a href="login.html" style="color: var(--color-primary-green); font-weight: 700; text-decoration: none;">Sign in here &rarr;</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Glass Footer -->
+  <footer class="glass-footer">
+    <p>Soil Testing Appointment &amp; Report Access Portal • Community Agricultural Support</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    // Redirect if already logged in
+    Auth.redirectIfLoggedIn();
+
+    const form = document.getElementById('registration-form');
+    const nameInput = document.getElementById('name');
+    const phoneInput = document.getElementById('phone');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const submitBtn = document.getElementById('submit-btn');
+    const alertBanner = document.getElementById('alert-banner');
+    const autofillRegBtn = document.getElementById('autofill-reg-btn');
+
+    function fillSampleRegistration() {
+      nameInput.value = 'Ramesh Patil';
+      phoneInput.value = '9876543210';
+      passwordInput.value = 'password123';
+      confirmPasswordInput.value = 'password123';
+      clearError('name-error');
+      clearError('phone-error');
+      clearError('password-error');
+      clearError('confirm_password-error');
+    }
+
+    if (autofillRegBtn) {
+      autofillRegBtn.addEventListener('click', fillSampleRegistration);
+    }
+
+    // Automatically fill demo registration on page load
+    fillSampleRegistration();
+
+    function showError(elementId, errorMsg) {
+      const errEl = document.getElementById(elementId);
+      const inputEl = document.getElementById(elementId.replace('-error', ''));
+      if (errEl) {
+        errEl.textContent = errorMsg;
+        errEl.classList.add('visible');
+      }
+      if (inputEl) {
+        inputEl.classList.add('is-invalid');
+      }
+    }
+
+    function clearError(elementId) {
+      const errEl = document.getElementById(elementId);
+      const inputEl = document.getElementById(elementId.replace('-error', ''));
+      if (errEl) {
+        errEl.textContent = '';
+        errEl.classList.remove('visible');
+      }
+      if (inputEl) {
+        inputEl.classList.remove('is-invalid');
+      }
+    }
+
+    // Live validation listeners
+    phoneInput.addEventListener('input', () => {
+      phoneInput.value = phoneInput.value.replace(/\D/g, '');
+      if (phoneInput.value.length === 10) {
+        clearError('phone-error');
+      }
+    });
+
+    phoneInput.addEventListener('blur', () => {
+      const res = Validation.validatePhone(phoneInput.value);
+      if (!res.isValid) {
+        showError('phone-error', res.error);
+      } else {
+        clearError('phone-error');
+      }
+    });
+
+    passwordInput.addEventListener('blur', () => {
+      const res = Validation.validatePassword(passwordInput.value);
+      if (!res.isValid) {
+        showError('password-error', res.error);
+      } else {
+        clearError('password-error');
+      }
+    });
+
+    confirmPasswordInput.addEventListener('input', () => {
+      if (confirmPasswordInput.value === passwordInput.value) {
+        clearError('confirm_password-error');
+      }
+    });
+
+    confirmPasswordInput.addEventListener('blur', () => {
+      const res = Validation.validatePasswordMatch(passwordInput.value, confirmPasswordInput.value);
+      if (!res.isValid) {
+        showError('confirm_password-error', res.error);
+      } else {
+        clearError('confirm_password-error');
+      }
+    });
+
+    // Form Submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertBanner.style.display = 'none';
+
+      let hasError = false;
+
+      // Validate Name
+      const nameRes = Validation.validateRequired(nameInput.value, 'Full Name');
+      if (!nameRes.isValid) {
+        showError('name-error', nameRes.error);
+        hasError = true;
+      } else {
+        clearError('name-error');
+      }
+
+      // Validate Phone
+      const phoneRes = Validation.validatePhone(phoneInput.value);
+      if (!phoneRes.isValid) {
+        showError('phone-error', phoneRes.error);
+        hasError = true;
+      } else {
+        clearError('phone-error');
+      }
+
+      // Validate Password
+      const pwdRes = Validation.validatePassword(passwordInput.value);
+      if (!pwdRes.isValid) {
+        showError('password-error', pwdRes.error);
+        hasError = true;
+      } else {
+        clearError('password-error');
+      }
+
+      // Validate Confirm Password
+      const matchRes = Validation.validatePasswordMatch(passwordInput.value, confirmPasswordInput.value);
+      if (!matchRes.isValid) {
+        showError('confirm_password-error', matchRes.error);
+        hasError = true;
+      } else {
+        clearError('confirm_password-error');
+      }
+
+      if (hasError) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Registering...';
+
+      const payload = {
+        name: nameInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        password: passwordInput.value
+      };
+
+      const result = await API.farmerRegister(payload);
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Register as Farmer';
+
+      if (result.ok) {
+        window.location.href = 'login.html?registered=1';
+      } else if (result.offline) {
+        alertBanner.className = 'glass-alert glass-alert-offline';
+        alertBanner.innerHTML = `<strong>Backend Offline:</strong> ${Validation.escapeHtml(result.error)}`;
+        alertBanner.style.display = 'flex';
+      } else {
+        alertBanner.className = 'glass-alert glass-alert-error';
+        alertBanner.innerHTML = `<strong>Registration Failed:</strong> ${Validation.escapeHtml(result.error || 'Please verify your details and try again.')}`;
+        alertBanner.style.display = 'flex';
+      }
+    });
+  </script>
+</body>
+</html>

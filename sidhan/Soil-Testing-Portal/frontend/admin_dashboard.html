@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard – Soil Testing Portal</title>
+    <!-- Modern fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin_dashboard.css" />
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar" aria-label="Admin navigation">
+            <div class="sidebar-header">
+                <h1>Admin</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="admin_dashboard.html" class="active"><span class="icon">🏠</span> Dashboard</a></li>
+                <li><a href="farmer_management.html"><span class="icon">👨‍🌾</span> Farmers</a></li>
+                <li><a href="appointment_management.html"><span class="icon">📅</span> Appointments</a></li>
+                <li><a href="report_management.html"><span class="icon">📄</span> Reports</a></li>
+                <li class="logout"><a href="#" id="logoutBtn"><span class="icon">🚪</span> Logout</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main content -->
+        <main class="content">
+            <header class="top-bar">
+                <h2>Dashboard</h2>
+                <div class="profile" id="profileSection">
+                    <img src="https://via.placeholder.com/40" alt="Admin avatar" class="avatar" />
+                    <span class="admin-name">Admin Name</span>
+                </div>
+            </header>
+
+            <section class="cards">
+                <div class="card" id="card-farmers">
+                    <h3>Total Farmers</h3>
+                    <p class="value" id="totalFarmers">0</p>
+                </div>
+                <div class="card" id="card-pending">
+                    <h3>Pending Appointments</h3>
+                    <p class="value" id="pendingAppts">0</p>
+                </div>
+                <div class="card" id="card-approved">
+                    <h3>Approved Appointments</h3>
+                    <p class="value" id="approvedAppts">0</p>
+                </div>
+                <div class="card" id="card-completed">
+                    <h3>Completed Appointments</h3>
+                    <p class="value" id="completedAppts">0</p>
+                </div>
+                <div class="card" id="card-reports">
+                    <h3>Reports Available</h3>
+                    <p class="value" id="totalReports">0</p>
+                </div>
+            </section>
+
+            <section class="recent-appointments">
+                <h3>Recent Appointments</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Appointment ID</th>
+                            <th>Farmer Name</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsBody">
+                        <!-- Rows will be populated by JS -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="admin_dashboard.js"></script>
+</body>
+</html>

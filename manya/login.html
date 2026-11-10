@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Login - Soil Testing Portal</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .auth-container {
+      max-width: 460px;
+      margin: 2rem auto 3.5rem;
+    }
+    .auth-header {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+    .auth-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 0.75rem;
+      border-radius: var(--radius-md);
+      background: var(--color-primary-green-light);
+      color: var(--color-primary-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-green-border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Glass Navigation -->
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">
+        <span class="nav-brand-badge">
+          <img src="assets/logo.svg" alt="SoilTest Portal Logo" width="42" height="42">
+        </span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">SoilTest Portal</span>
+          <span class="nav-brand-subtitle">Community Agricultural Support</span>
+        </div>
+      </a>
+      <ul class="nav-links" id="main-nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="login.html" class="nav-link active">Sign In</a></li>
+        <li><a href="register.html" class="nav-link">Register</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-wrapper">
+    <div class="auth-container">
+      
+      <div class="glass-card">
+        <div class="auth-header">
+          <div class="auth-icon" style="background: transparent; border: none; width: 56px; height: 56px;">
+            <img src="assets/logo.svg" alt="SoilTest Portal Logo" width="56" height="56">
+          </div>
+          <h1 class="page-title" style="justify-content: center; font-size: 1.7rem;">Farmer Login</h1>
+          <p class="page-subtitle" style="margin-left: auto; margin-right: auto; text-align: center;">Sign in to view your appointments and download official soil reports</p>
+        </div>
+
+        <!-- Notification / Error Message Area -->
+        <div id="error-banner" class="glass-alert" style="display: none;"></div>
+
+        <!-- Auto-Fill Quick Credentials Card -->
+        <div class="demo-credentials-box" style="margin-bottom: 1.35rem; padding: 0.75rem 1rem; background: rgba(245, 250, 246, 0.9); border: 1px dashed rgba(30, 126, 72, 0.35); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem;">
+          <div>
+            <span style="font-weight: 800; color: var(--color-primary-green);">⚡ Auto-Fill Ready:</span>
+            <span style="color: var(--color-text-muted); margin-left: 4px;">9876543210 &bull; password123</span>
+          </div>
+          <div style="display: flex; gap: 0.4rem;">
+            <button type="button" id="autofill-btn" class="btn btn-secondary" style="min-height: 32px; padding: 0.25rem 0.75rem; font-size: 0.78rem;">
+              Fill Fields
+            </button>
+            <button type="button" onclick="loginDemoMode()" class="btn btn-primary" style="min-height: 32px; padding: 0.25rem 0.85rem; font-size: 0.78rem;">
+              Sign In Now &rarr;
+            </button>
+          </div>
+        </div>
+
+        <form id="login-form" novalidate>
+          
+          <!-- Phone Number -->
+          <div class="form-group">
+            <label for="phone" class="form-label">Registered Mobile Number <span class="required">*</span></label>
+            <input 
+              type="tel" 
+              id="phone" 
+              name="phone" 
+              class="form-control" 
+              value="9876543210"
+              placeholder="10-digit mobile number" 
+              maxlength="10"
+              required
+              autocomplete="tel"
+            >
+            <div id="phone-error" class="form-error"></div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password" class="form-label">Password <span class="required">*</span></label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="form-control" 
+              value="password123"
+              placeholder="Enter your password" 
+              required
+              autocomplete="current-password"
+            >
+            <div id="password-error" class="form-error"></div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-block" style="margin-top: 1.5rem; font-size: 1.02rem;">
+            Sign In to Portal
+          </button>
+
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.92rem; color: var(--color-text-muted);">
+          New farmer? <a href="register.html" style="color: var(--color-primary-green); font-weight: 700; text-decoration: none;">Register a free account &rarr;</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Glass Footer -->
+  <footer class="glass-footer">
+    <p>Soil Testing Appointment &amp; Report Access Portal • Community Agricultural Support</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    // Redirect if already logged in
+    Auth.redirectIfLoggedIn();
+
+    const form = document.getElementById('login-form');
+    const phoneInput = document.getElementById('phone');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorBanner = document.getElementById('error-banner');
+    const autofillBtn = document.getElementById('autofill-btn');
+
+    function fillFarmerCredentials() {
+      phoneInput.value = '9876543210';
+      passwordInput.value = 'password123';
+      clearError('phone-error');
+      clearError('password-error');
+    }
+
+    // Automatically fill credentials on page load
+    fillFarmerCredentials();
+
+    window.loginDemoMode = function() {
+      Auth.saveSession('demo-farmer-token', {
+        id: 1,
+        name: 'Ramesh Patil',
+        phone: (phoneInput && phoneInput.value.trim()) || '9876543210'
+      });
+      window.location.href = 'dashboard.html';
+    };
+
+    if (autofillBtn) {
+      autofillBtn.addEventListener('click', fillFarmerCredentials);
+    }
+
+    // Check for query parameters (?registered=1, ?logged_out=1, ?session_expired=1)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('registered') === '1') {
+      errorBanner.className = 'glass-alert glass-alert-success';
+      errorBanner.innerHTML = '<strong>Account Created!</strong> Your registration was successful. Please enter your mobile number and password to log in.';
+      errorBanner.style.display = 'flex';
+    } else if (urlParams.get('logged_out') === '1') {
+      errorBanner.className = 'glass-alert glass-alert-success';
+      errorBanner.innerHTML = 'You have signed out safely. Come back anytime!';
+      errorBanner.style.display = 'flex';
+    } else if (urlParams.get('session_expired') === '1') {
+      errorBanner.className = 'glass-alert glass-alert-offline';
+      errorBanner.innerHTML = 'Your login session has expired. Please sign in again.';
+      errorBanner.style.display = 'flex';
+    }
+
+    function showError(elementId, errorMsg) {
+      const errEl = document.getElementById(elementId);
+      const inputEl = document.getElementById(elementId.replace('-error', ''));
+      if (errEl) {
+        errEl.textContent = errorMsg;
+        errEl.classList.add('visible');
+      }
+      if (inputEl) {
+        inputEl.classList.add('is-invalid');
+      }
+    }
+
+    function clearError(elementId) {
+      const errEl = document.getElementById(elementId);
+      const inputEl = document.getElementById(elementId.replace('-error', ''));
+      if (errEl) {
+        errEl.textContent = '';
+        errEl.classList.remove('visible');
+      }
+      if (inputEl) {
+        inputEl.classList.remove('is-invalid');
+      }
+    }
+
+    // Clean phone input
+    phoneInput.addEventListener('input', () => {
+      phoneInput.value = phoneInput.value.replace(/\D/g, '');
+      if (phoneInput.value.length === 10) {
+        clearError('phone-error');
+      }
+    });
+
+    // Form Submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBanner.style.display = 'none';
+
+      let hasError = false;
+
+      const phoneRes = Validation.validatePhone(phoneInput.value);
+      if (!phoneRes.isValid) {
+        showError('phone-error', phoneRes.error);
+        hasError = true;
+      } else {
+        clearError('phone-error');
+      }
+
+      if (!passwordInput.value.trim()) {
+        showError('password-error', 'Password is required to log in.');
+        hasError = true;
+      } else {
+        clearError('password-error');
+      }
+
+      if (hasError) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Signing In...';
+
+      const payload = {
+        phone: phoneInput.value.trim(),
+        password: passwordInput.value
+      };
+
+      const result = await API.farmerLogin(payload);
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Sign In to Portal';
+
+      if (result.ok && result.data?.token) {
+        // Save session and redirect to dashboard
+        Auth.saveSession(result.data.token, result.data.farmer || { phone: payload.phone, name: 'Farmer' });
+        window.location.href = 'dashboard.html';
+      } else if (result.offline) {
+        // Backend offline indicator with 1-click preview entry
+        errorBanner.className = 'glass-alert glass-alert-offline';
+        errorBanner.innerHTML = `
+          <div>
+            <strong>Backend Offline:</strong> Person 1's Flask server is not running on http://127.0.0.1:5000.<br>
+            <span style="font-size: 0.86rem; color: var(--color-text-muted); display: block; margin: 0.4rem 0;">
+              You can explore the full Farmer Portal right now in <strong>Interactive Preview Mode</strong> with sample data.
+            </span>
+            <button type="button" onclick="loginDemoMode()" class="btn btn-primary" style="min-height: 34px; padding: 0.35rem 0.95rem; font-size: 0.84rem; margin-top: 0.3rem;">
+              ⚡ Continue to Dashboard in Preview Mode &rarr;
+            </button>
+          </div>
+        `;
+        errorBanner.style.display = 'flex';
+      } else {
+        // Auth failure
+        errorBanner.className = 'glass-alert glass-alert-error';
+        errorBanner.innerHTML = `<strong>Sign In Failed:</strong> ${Validation.escapeHtml(result.error || 'Invalid phone number or password. Please verify your credentials.')}`;
+        errorBanner.style.display = 'flex';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report Management – Admin Panel</title>
+    <!-- Modern fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin_dashboard.css" />
+    <link rel="stylesheet" href="report_management.css" />
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar (reuse from other admin pages) -->
+        <nav class="sidebar" aria-label="Admin navigation">
+            <div class="sidebar-header"><h1>Admin</h1></div>
+            <ul class="nav-links">
+                <li><a href="admin_dashboard.html"><span class="icon">🏠</span> Dashboard</a></li>
+                <li><a href="farmer_management.html"><span class="icon">👨‍🌾</span> Farmers</a></li>
+                <li><a href="appointment_management.html"><span class="icon">📅</span> Appointments</a></li>
+                <li><a href="report_management.html" class="active"><span class="icon">📄</span> Reports</a></li>
+                <li class="logout"><a href="admin_login.html" id="logoutBtn"><span class="icon">🚪</span> Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <header class="top-bar">
+                <h2>Report Management</h2>
+                <div class="profile" id="profileSection">
+                    <img src="https://via.placeholder.com/40" alt="Admin avatar" class="avatar" />
+                    <span class="admin-name">Admin Name</span>
+                </div>
+            </header>
+
+            <section class="section-header">
+                <p class="description">Upload, view and replace PDF soil‑test reports.</p>
+                <form id="uploadForm" novalidate>
+                    <div class="form-group">
+                        <label for="farmerSelect">Farmer</label>
+                        <select id="farmerSelect" required>
+                            <option value="">-- Select Farmer --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointmentSelect">Appointment</label>
+                        <select id="appointmentSelect" required>
+                            <option value="">-- Select Appointment --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pdfFile">PDF Report</label>
+                        <input type="file" id="pdfFile" accept="application/pdf" required />
+                    </div>
+                    <div id="uploadMessage" class="msg" role="alert" aria-live="assertive"></div>
+                    <button type="submit" id="uploadBtn" class="primary">
+                        <span class="btn-text">Upload</span>
+                        <span class="spinner hidden" aria-hidden="true"></span>
+                    </button>
+                </form>
+            </section>
+
+            <section class="report-controls">
+                <input type="text" id="reportSearch" placeholder="Search by Report ID or farmer name..." class="search-input" />
+            </section>
+
+            <section class="report-table-section">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Farmer Name</th>
+                            <th>Appointment ID</th>
+                            <th>File Name</th>
+                            <th>Upload Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <!-- rows injected by JS -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state hidden">
+                    No reports to display. Upload a report using the form above.
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Details Modal (view/download) -->
+    <div id="detailsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal" aria-label="Close">✖</button>
+            <h3 id="modalTitle">Report Details</h3>
+            <div class="details-body" id="detailsBody"></div>
+        </div>
+    </div>
+
+    <script src="report_management.js"></script>
+</body>
+</html>

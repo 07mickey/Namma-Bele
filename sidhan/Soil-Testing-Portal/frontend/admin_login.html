@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login – Soil Testing Portal</title>
+    <!-- Modern fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin_login.css" />
+</head>
+<body>
+    <div class="login-bg">
+        <div class="overlay"></div>
+        <div class="login-container glass-panel">
+            <div class="logo-section">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iNjAiIGZpbGw9IiMzMzciIC8+PHRleHQgeD0iNjAiIHk9IjM1IiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj5MQU5ET1c8L3RleHQ+PC9zdmc+" alt="AgriTech Logo" class="logo" />
+                <h1 class="portal-name">Soil Insight Admin</h1>
+                <p class="tagline">Empowering sustainable farming through data</p>
+            </div>
+            <form id="loginForm" novalidate>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="admin@example.com" required />
+                </div>
+                <div class="form-group password-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="••••••••" required />
+                        <button type="button" id="togglePassword" aria-label="Show password">👁️</button>
+                    </div>
+                </div>
+                <div id="errorMessage" class="error-message" role="alert" aria-live="assertive"></div>
+                <button type="submit" id="loginButton" class="primary">
+                    <span class="btn-text">Login</span>
+                    <span class="spinner hidden" aria-hidden="true"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin_login.js"></script>
+</body>
+</html>
