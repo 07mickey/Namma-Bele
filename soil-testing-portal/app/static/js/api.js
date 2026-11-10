@@ -403,7 +403,11 @@ const API = {
   },
 
   async checkAuth() {
-    return await this.request('/api/auth/me', { method: 'GET' });
+    const res = await this.request('/api/auth/me', { method: 'GET' });
+    if (res && res.data && typeof res.data.authenticated !== 'undefined') {
+      return res.data;
+    }
+    return { authenticated: false, user: null };
   },
 
   async logout() {

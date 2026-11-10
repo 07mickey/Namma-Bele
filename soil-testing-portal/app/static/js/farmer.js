@@ -80,33 +80,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   const statCompleted = document.getElementById('stat-completed');
   const statReports = document.getElementById('stat-reports');
 
-  // 1. Authenticate and enforce farmer role
+  // Safe alert notifier helper
+  const triggerAlert = (msg, type = 'info') => {
+    if (typeof window.showAlert === 'function') {
+      window.showAlert(msg, type);
+    } else {
+      console.log(`[Alert: ${type}] ${msg}`);
+    }
+  };
+
+  // 1. Verify authenticated farmer role
   try {
     const authData = await API.checkAuth();
-    if (!authData || !authData.authenticated || !authData.user) {
-      window.location.href = '/login';
-      return;
-    }
-    const userRole = (authData.user.role || '').toLowerCase();
-    if (!userRole.includes('farmer')) {
-      if (userRole.includes('admin') || userRole.includes('coordinator')) {
-        window.location.href = '/admin';
-      } else if (userRole.includes('operator')) {
-        window.location.href = '/operator';
-      } else if (userRole.includes('field')) {
-        window.location.href = '/field-worker';
-      } else if (userRole.includes('lab')) {
-        window.location.href = '/lab';
-      } else if (userRole.includes('advisor')) {
-        window.location.href = '/advisor';
-      } else {
-        window.location.href = '/login';
+    const user = (authData && authData.user) || (authData && authData.data && authData.data.user);
+    const isAuth = (authData && authData.authenticated) || (authData && authData.data && authData.data.authenticated);
+
+    if (isAuth && user) {
+      const userRole = (user.role || '').toLowerCase();
+      if (!userRole.includes('farmer')) {
+        if (userRole.includes('admin') || userRole.includes('coordinator')) {
+          window.location.href = '/admin';
+        } else if (userRole.includes('operator')) {
+          window.location.href = '/operator';
+        } else if (userRole.includes('field')) {
+          window.location.href = '/field-worker';
+        } else if (userRole.includes('lab')) {
+          window.location.href = '/lab';
+        } else if (userRole.includes('advisor')) {
+          window.location.href = '/advisor';
+        } else {
+          window.location.href = '/login';
+        }
+        return;
       }
-      return;
-    }
-    currentUser = authData.user;
-    if (welcomeName && currentUser.name) {
-      welcomeName.textContent = currentUser.name;
+      currentUser = user;
+      if (welcomeName && currentUser.name) {
+        welcomeName.textContent = currentUser.name;
+      }
+    } else {
+      // In Flask SSR, the session was already validated on the backend.
+      // Do not perform aggressive client redirects if background check encounters an issue.
+      console.warn('Farmer background session verification pending.');
     }
   } catch (err) {
     console.warn('Farmer auth verification fallback:', err);
@@ -385,7 +399,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderAppointmentsTable();
     } catch (err) {
       loadingIndicator.style.display = 'none';
-      showAlert(err.message || 'Failed to load appointments.', 'error');
+      triggerAlert(err.message || 'Failed to load appointments.', 'error');
     }
   }
 
@@ -548,7 +562,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       bookingSubmitBtn.textContent = 'Confirm & Book Appointment';
 
       showBookingSuccess(`Appointment #${res.appointment.id} successfully booked! Status is Pending.`);
-      showAlert(`Appointment #${res.appointment.id} created successfully! Initial status is Pending.`, 'success');
+      triggerAlert(`Appointment #${res.appointment.id} created successfully! Initial status is Pending.`, 'success');
 
       // Reset form and wizard to Step 1
       appointmentForm.reset();
@@ -682,7 +696,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       errBox.textContent = err.message || 'Failed to load details.';
       modalBody.appendChild(errBox);
       if (err.status === 401) {
-        showAlert('Your session has expired. Redirecting to login...', 'warning');
+        triggerAlert('Your session has expired. Redirecting to login...', 'warning');
         setTimeout(() => { window.location.href = '/login'; }, 1500);
       }
     }
@@ -690,12 +704,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 9. Download Report Binary
   async function downloadReport(apptId, filename) {
-    showAlert('Initiating secure report download...', 'info', 2000);
+    triggerAlert('Initiating secure report download...', 'info');
     try {
       await API.download(`/api/appointments/${apptId}/report/download`, filename);
-      showAlert('Report downloaded successfully!', 'success');
+      triggerAlert('Report downloaded successfully!', 'success');
     } catch (err) {
-      showAlert(err.message || 'Failed to download report PDF.', 'error');
+      triggerAlert(err.message || 'Failed to download report PDF.', 'error');
     }
   }
 

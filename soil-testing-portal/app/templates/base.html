@@ -111,7 +111,49 @@
   <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
   <script src="{{ url_for('static', filename='js/api.js') }}"></script>
   <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+  <div id="toast-container" style="position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none;"></div>
   <script>
+    // Global Toast Notification Helper
+    window.showAlert = function(msg, type = 'info', duration = 3500) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.style.pointerEvents = 'auto';
+      toast.style.padding = '0.75rem 1.25rem';
+      toast.style.borderRadius = '8px';
+      toast.style.fontSize = '0.9rem';
+      toast.style.fontWeight = '600';
+      toast.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.15)';
+      toast.style.animation = 'modalEnter 0.2s ease-out';
+      toast.style.maxWidth = '360px';
+      toast.style.display = 'flex';
+      toast.style.alignItems = 'center';
+      toast.style.gap = '0.5rem';
+
+      if (type === 'success') {
+        toast.style.background = '#1e7e48';
+        toast.style.color = '#ffffff';
+      } else if (type === 'error') {
+        toast.style.background = '#dc2626';
+        toast.style.color = '#ffffff';
+      } else if (type === 'warning') {
+        toast.style.background = '#f59e0b';
+        toast.style.color = '#ffffff';
+      } else {
+        toast.style.background = '#0f2e1b';
+        toast.style.color = '#ffffff';
+      }
+
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    };
+    var showAlert = window.showAlert;
+
     // Mobile navigation drawer toggle
     const toggleBtn = document.getElementById('nav-toggle-btn');
     const navLinks = document.getElementById('base-nav-links');

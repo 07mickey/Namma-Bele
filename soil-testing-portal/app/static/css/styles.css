@@ -273,6 +273,106 @@ body {
   background: linear-gradient(90deg, var(--color-earth-brown) 0%, var(--color-soil-accent) 100%);
 }
 
+/* Dashboard Action Grid & Farmer Services Cards */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.action-card {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.85rem 1.65rem;
+  text-decoration: none;
+  color: inherit;
+  min-height: 220px;
+  border-radius: var(--radius-lg);
+  transition: var(--transition-smooth);
+}
+
+.action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glass-shadow-lg);
+}
+
+.action-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.15rem;
+}
+
+.action-icon-green {
+  background: var(--color-primary-green-light);
+  color: var(--color-primary-green);
+  border: 1px solid var(--color-green-border);
+}
+
+.action-icon-brown {
+  background: var(--color-earth-brown-light);
+  color: var(--color-earth-brown);
+  border: 1px solid var(--color-soil-border);
+}
+
+.action-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin-bottom: 0.5rem;
+}
+
+.action-desc {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+  flex: 1;
+}
+
+/* Appointment Status Details Grid & Explanations */
+.status-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.detail-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.status-explanation {
+  margin-top: 1.15rem;
+  padding: 0.9rem 1.15rem;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
 .agri-tips-box {
   background: rgba(251, 245, 239, 0.85);
   border: 1px solid var(--color-soil-border);
