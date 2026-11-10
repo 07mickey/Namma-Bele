@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soil Health &amp; Testing Guide — NAMMA BELE</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    .guide-section {
+      margin-bottom: 2.5rem;
+    }
+    .guide-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--color-text-main);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nutrient-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+    .ph-meter {
+      display: flex;
+      height: 36px;
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      margin: 1.25rem 0 0.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .ph-acid {
+      flex: 1;
+      background: #f87171;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .ph-neutral {
+      flex: 1.2;
+      background: #4ade80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #14532d;
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+    .ph-alkali {
+      flex: 1;
+      background: #60a5fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Glass Navigation -->
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">
+        <span class="nav-brand-badge">
+          <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="NAMMA BELE Logo" width="42" height="42">
+        </span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">NAMMA BELE</span>
+          <span class="nav-brand-subtitle">Soil Testing &amp; Agricultural Support</span>
+        </div>
+      </a>
+      <ul class="nav-links" id="main-nav-links">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/soil-guide" class="nav-link active">Soil Health Guide</a></li>
+        <li><a href="/login" class="nav-link">Sign In</a></li>
+        <li><a href="/register" class="btn btn-primary" style="padding: 0.45rem 1.15rem; font-size: 0.88rem; min-height: 38px;">Register Account</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-wrapper">
+    
+    <div class="page-header" style="text-align: center; max-width: 780px; margin: 0 auto 3rem;">
+      <h1 class="page-title" style="justify-content: center;">
+        Farmer's Practical Soil Health &amp; Testing Guide
+      </h1>
+      <p class="page-subtitle" style="margin: 0.5rem auto 0;">
+        A practical guide explaining essential soil nutrients, pH levels, and how testing protects your agricultural harvest.
+      </p>
+    </div>
+
+    <!-- Section 1: The Primary N-P-K Nutrients -->
+    <section class="guide-section">
+      <h2 class="guide-title">
+        The Core Soil Nutrients (N-P-K)
+      </h2>
+      <p style="color: var(--color-text-muted);">
+        Every official soil test measures the balance of three primary macronutrients plus organic carbon. Here is what they do for your crops:
+      </p>
+
+      <div class="nutrient-grid">
+        <div class="glass-card feature-card">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary-green); margin-bottom: 0.5rem;">
+            Nitrogen (N)
+          </h3>
+          <p style="font-size: 0.92rem; color: var(--color-text-muted); line-height: 1.55;">
+            Drives healthy green foliage, Chlorophyll synthesis, stems, and vegetative growth. Deficient soil results in yellowing leaves and stunted crops.
+          </p>
+        </div>
+
+        <div class="glass-card feature-card glass-card-earth">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--color-earth-brown); margin-bottom: 0.5rem;">
+            Phosphorus (P)
+          </h3>
+          <p style="font-size: 0.92rem; color: var(--color-text-muted); line-height: 1.55;">
+            Stimulates strong root development, flowering, and seed formation. Critical during the early establishment of seedlings.
+          </p>
+        </div>
+
+        <div class="glass-card feature-card">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary-green); margin-bottom: 0.5rem;">
+            Potassium (K)
+          </h3>
+          <p style="font-size: 0.92rem; color: var(--color-text-muted); line-height: 1.55;">
+            Builds plant immunity against diseases, pests, and drought. Improves grain quality, fruit weight, and shelf life.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Soil pH Balance -->
+    <section class="guide-section">
+      <div class="glass-card">
+        <h2 class="guide-title">
+          Understanding Soil pH Balance
+        </h2>
+        <p style="color: var(--color-text-muted); line-height: 1.55;">
+          Soil pH dictates whether plant roots can actually absorb nutrients from the ground. Even if fertilizer is applied, an improper pH locks nutrients away.
+        </p>
+
+        <div class="ph-meter">
+          <div class="ph-acid">Acidic (pH &lt; 6.0)</div>
+          <div class="ph-neutral">Optimal (pH 6.5 - 7.5)</div>
+          <div class="ph-alkali">Alkaline (pH &gt; 8.0)</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-subtle);">
+          <span>pH 4.0 - 5.5 (Add Lime)</span>
+          <span>Ideal for most crops</span>
+          <span>pH 8.0 - 9.5 (Add Gypsum)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Proper Soil Sampling Technique -->
+    <section class="guide-section">
+      <div class="glass-card glass-card-earth">
+        <h2 class="guide-title">
+          How to Take a Field Soil Sample
+        </h2>
+        <ol class="agri-tips-list" style="padding-left: 1.35rem; margin-top: 0.75rem;">
+          <li><strong>Divide by field uniformity:</strong> Sample different soil types, slopes, or cropping history separately.</li>
+          <li><strong>Clean surface:</strong> Scrape away dried grass, stones, and litter without digging out topsoil.</li>
+          <li><strong>V-Shape Cut:</strong> Dig a V-shaped pit 15 cm deep (plough layer) and take a 1-inch slice along the face.</li>
+          <li><strong>Mix 5 to 8 spots:</strong> Collect samples in a zig-zag pattern across the plot and mix thoroughly in a clean container.</li>
+          <li><strong>Air Dry:</strong> Dry the composite sample under shade (not direct scorching sun) before lab submission.</li>
+        </ol>
+        <div style="margin-top: 1.5rem;">
+          <a href="book-appointment.html" class="btn btn-primary">Schedule Official Soil Collection &rarr;</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Glass Footer -->
+  <footer class="glass-footer">
+    <p>NAMMA BELE &bull; Soil Testing &amp; Farmer Agricultural Service Platform</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>
+

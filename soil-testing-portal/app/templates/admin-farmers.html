@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registered Farmers — NAMMA BELE</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+  <!-- Top Glass Navigation -->
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <a href="/admin" class="nav-brand">
+        <span class="nav-brand-badge">
+          <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="NAMMA BELE Logo" width="42" height="42">
+        </span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">NAMMA BELE Admin</span>
+          <span class="nav-brand-subtitle">Management Console</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/admin" class="nav-link">Overview</a></li>
+        <li><a href="/admin-appointments" class="nav-link">Appointments</a></li>
+        <li><a href="/admin-reports" class="nav-link">Upload Reports</a></li>
+        <li><a href="/admin-farmers" class="nav-link active">Farmers</a></li>
+        <li><a href="/admin/tracking" class="nav-link">Tracking</a></li>
+        <li><a href="/admin/dispatch" class="nav-link">Dispatch</a></li>
+        <li><button type="button" onclick="Admin.adminLogout()" class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.85rem; min-height: 36px;">Sign Out</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-wrapper">
+    
+    <div class="page-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 class="page-title">
+          Registered Farmers Directory
+        </h1>
+        <p class="page-subtitle">View and contact registered community farmers</p>
+      </div>
+      <div>
+        <input 
+          type="text" 
+          id="farmer-search" 
+          class="form-control" 
+          placeholder="Search by name or mobile..."
+          style="min-height: 40px; font-size: 0.9rem; width: 240px;"
+        >
+      </div>
+    </div>
+
+    <!-- Alert Area -->
+    <div id="admin-alert" class="glass-alert" style="display: none;"></div>
+
+    <div class="glass-card">
+      <div style="overflow-x: auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Farmer Name</th>
+              <th>Mobile Number</th>
+              <th>Registration Date</th>
+              <th>Contact</th>
+            </tr>
+          </thead>
+          <tbody id="farmers-tbody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">
+                Loading registered farmers...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Glass Footer -->
+  <footer class="glass-footer">
+    <p>NAMMA BELE &bull; Soil Testing &amp; Agricultural Administration Console</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+  <script>
+    {% if session.get('user_id') %}
+    if (typeof Admin !== 'undefined' && !Admin.isAdminLoggedIn()) {
+      Admin.saveAdminSession('flask-session', {
+        id: {{ session.get('user_id') }},
+        role: "{{ session.get('role', 'admin') }}",
+        phone: "{{ session.get('phone', '') }}",
+        name: "{{ session.get('name', 'Admin') }}"
+      });
+    }
+    {% endif %}
+    Admin.requireAdminAuth();
+
+    const tbody = document.getElementById('farmers-tbody');
+    const alertBanner = document.getElementById('admin-alert');
+    const searchInput = document.getElementById('farmer-search');
+
+    let allFarmers = [];
+
+    function renderFarmers(list) {
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">No farmers found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(f => `
+        <tr>
+          <td style="font-weight: 700;">#${Validation.escapeHtml(f.id || '')}</td>
+          <td style="font-weight: 700; color: var(--color-text-main);">${Validation.escapeHtml(f.name || 'Farmer')}</td>
+          <td>📱 ${Validation.escapeHtml(f.phone || 'N/A')}</td>
+          <td>${Validation.escapeHtml(f.created_at ? new Date(f.created_at).toLocaleDateString() : 'Active Member')}</td>
+          <td>
+            <a href="tel:${Validation.escapeHtml(f.phone || '')}" class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.82rem; min-height: 32px;">
+              Call Farmer
+            </a>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadFarmers() {
+      const res = await Admin.getFarmers();
+
+      if (res.offline) {
+        alertBanner.className = 'glass-alert glass-alert-offline';
+        alertBanner.innerHTML = `<strong>Backend Offline:</strong> ${Validation.escapeHtml(res.error)}<br><span style="font-size:0.85rem;">[Notice: Waiting for Person 1's Flask backend to serve live farmer profiles.]</span>`;
+        alertBanner.style.display = 'flex';
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">Backend server offline.</td></tr>`;
+        return;
+      }
+
+      if (!res.ok) {
+        alertBanner.className = 'glass-alert glass-alert-error';
+        alertBanner.innerHTML = `<strong>Error:</strong> ${Validation.escapeHtml(res.error || 'Failed to load farmers list.')}`;
+        alertBanner.style.display = 'flex';
+        tbody.innerHTML = '';
+        return;
+      }
+
+      allFarmers = res.data?.farmers || [];
+      renderFarmers(allFarmers);
+    }
+
+    searchInput.addEventListener('input', () => {
+      const q = (searchInput.value || '').toLowerCase().trim();
+      const filtered = allFarmers.filter(f => 
+        (f.name || '').toLowerCase().includes(q) ||
+        (f.phone || '').includes(q)
+      );
+      renderFarmers(filtered);
+    });
+
+    loadFarmers();
+  </script>
+</body>
+</html>
+

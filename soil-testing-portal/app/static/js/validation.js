@@ -25,15 +25,15 @@ function validatePhone(phone) {
     const formatted = trimmed.startsWith('+') ? trimmed : '+91' + trimmed;
     return { isValid: true, error: '', formatted };
   }
-  return { isValid: false, error: 'Please enter a valid 10-digit mobile number (e.g. 9876543210) or E.164 format (+919876543210).' };
+  return { isValid: false, error: 'Please enter a valid 10-digit mobile number or E.164 format (+919876543210).' };
 }
 
 function validatePassword(password) {
   if (!password || typeof password !== 'string') {
     return { isValid: false, error: 'Password is required.' };
   }
-  if (password.length < 8) {
-    return { isValid: false, error: 'Password must be at least 8 characters long.' };
+  if (password.length < 6) {
+    return { isValid: false, error: 'Password must be at least 6 characters long.' };
   }
   return { isValid: true, error: '' };
 }

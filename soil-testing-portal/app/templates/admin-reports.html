@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Soil Reports — NAMMA BELE</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    .upload-container {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: 1.75rem;
+      align-items: flex-start;
+    }
+    @media (max-width: 860px) {
+      .upload-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Glass Navigation -->
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <a href="/admin" class="nav-brand">
+        <span class="nav-brand-badge">
+          <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="NAMMA BELE Logo" width="42" height="42">
+        </span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">NAMMA BELE Admin</span>
+          <span class="nav-brand-subtitle">Management Console</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/admin" class="nav-link">Overview</a></li>
+        <li><a href="/admin-appointments" class="nav-link">Appointments</a></li>
+        <li><a href="/admin-reports" class="nav-link active">Upload Reports</a></li>
+        <li><a href="/admin-farmers" class="nav-link">Farmers</a></li>
+        <li><a href="/admin/tracking" class="nav-link">Tracking</a></li>
+        <li><a href="/admin/dispatch" class="nav-link">Dispatch</a></li>
+        <li><button type="button" onclick="Admin.adminLogout()" class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.85rem; min-height: 36px;">Sign Out</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-wrapper">
+    
+    <div class="page-header">
+      <h1 class="page-title">
+        Soil Health Report Upload
+      </h1>
+      <p class="page-subtitle">Upload official lab-verified PDF reports for completed soil tests</p>
+    </div>
+
+    <!-- Alert Banner -->
+    <div id="admin-alert" class="glass-alert" style="display: none;"></div>
+
+    <div class="upload-container">
+      
+      <!-- Upload Form Card -->
+      <div class="glass-card">
+        <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--color-text-main);">
+          Upload PDF Report
+        </h2>
+
+        <form id="report-upload-form" novalidate>
+          
+          <div class="form-group">
+            <label for="appointment_id" class="form-label">
+              Linked Appointment <span class="required">*</span>
+            </label>
+            <select id="appointment_id" name="appointment_id" class="form-control" required>
+              <option value="">-- Select Completed Appointment --</option>
+            </select>
+            <div class="form-hint">Only approved or completed appointments are eligible.</div>
+            <div id="appointment_id-error" class="form-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="report_file" class="form-label">
+              Soil Test Report (PDF only) <span class="required">*</span>
+            </label>
+            <input 
+              type="file" 
+              id="report_file" 
+              name="report_file" 
+              class="form-control" 
+              accept=".pdf,application/pdf"
+              required
+            >
+            <div class="form-hint">Official lab certificate in .PDF format (Max 10 MB).</div>
+            <div id="report_file-error" class="form-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="report_date" class="form-label">
+              Report / Lab Analysis Date <span class="required">*</span>
+            </label>
+            <input 
+              type="date" 
+              id="report_date" 
+              name="report_date" 
+              class="form-control" 
+              required
+            >
+            <div id="report_date-error" class="form-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="remarks" class="form-label">
+              Lab Remarks / Nutrient Summary (Optional)
+            </label>
+            <textarea 
+              id="remarks" 
+              name="remarks" 
+              class="form-control" 
+              rows="2"
+              placeholder="e.g. Soil pH 6.8 (Neutral). High Phosphorus, Moderate Nitrogen. Recommendation: Apply zinc sulphate."
+            ></textarea>
+          </div>
+
+          <button type="submit" id="submit-upload-btn" class="btn btn-primary btn-block" style="margin-top: 1.5rem;">
+            Upload &amp; Publish Report
+          </button>
+
+        </form>
+      </div>
+
+      <!-- Previously Uploaded Reports List -->
+      <div class="glass-card">
+        <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--color-text-main);">
+          Published PDF Reports
+        </h2>
+
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Appt #</th>
+                <th>File Name</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="reports-tbody">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">
+                  Loading published reports...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Glass Footer -->
+  <footer class="glass-footer">
+    <p>NAMMA BELE &bull; Soil Testing &amp; Agricultural Administration Console</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+  <script>
+    {% if session.get('user_id') %}
+    if (typeof Admin !== 'undefined' && !Admin.isAdminLoggedIn()) {
+      Admin.saveAdminSession('flask-session', {
+        id: {{ session.get('user_id') }},
+        role: "{{ session.get('role', 'admin') }}",
+        phone: "{{ session.get('phone', '') }}",
+        name: "{{ session.get('name', 'Admin') }}"
+      });
+    }
+    {% endif %}
+    Admin.requireAdminAuth();
+
+    const form = document.getElementById('report-upload-form');
+    const aptSelect = document.getElementById('appointment_id');
+    const fileInput = document.getElementById('report_file');
+    const dateInput = document.getElementById('report_date');
+    const remarksInput = document.getElementById('remarks');
+    const alertBanner = document.getElementById('admin-alert');
+    const tbody = document.getElementById('reports-tbody');
+    const submitBtn = document.getElementById('submit-upload-btn');
+
+    // Default date to today
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.value = today;
+
+    // Check pre-filled query param
+    const urlParams = new URLSearchParams(window.location.search);
+    const prefillAptId = urlParams.get('appointment_id');
+
+    async function loadAppointmentsForDropdown() {
+      const res = await Admin.getAppointments();
+      if (!res.ok) return;
+
+      const apts = res.data?.appointments || [];
+      aptSelect.innerHTML = '<option value="">-- Select Appointment --</option>';
+
+      apts.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = `#${a.id} - ${a.land_details || 'Field'} (${a.status || 'Pending'})`;
+        if (prefillAptId && String(a.id) === String(prefillAptId)) {
+          opt.selected = true;
+        }
+        aptSelect.appendChild(opt);
+      });
+    }
+
+    async function loadReportsTable() {
+      const res = await Admin.getReports();
+
+      if (res.offline) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">Backend offline. Reports list awaiting server.</td></tr>`;
+        return;
+      }
+
+      if (!res.ok) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--status-rejected-text); padding: 2rem;">${Validation.escapeHtml(res.error || 'Failed to load reports.')}</td></tr>`;
+        return;
+      }
+
+      const reports = res.data?.reports || [];
+      if (reports.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">No soil reports uploaded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = reports.map(r => `
+        <tr>
+          <td style="font-weight: 700;">#${Validation.escapeHtml(r.appointment_id || '')}</td>
+          <td>📄 ${Validation.escapeHtml(r.file_name || 'report.pdf')}</td>
+          <td>${Validation.escapeHtml(r.report_date ? new Date(r.report_date).toLocaleDateString() : 'N/A')}</td>
+          <td>
+            <span class="status-badge status-completed" style="font-size: 0.76rem;">Published</span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertBanner.style.display = 'none';
+
+      let hasError = false;
+
+      if (!aptSelect.value) {
+        document.getElementById('appointment_id-error').textContent = 'Please choose an appointment.';
+        document.getElementById('appointment_id-error').classList.add('visible');
+        aptSelect.classList.add('is-invalid');
+        hasError = true;
+      } else {
+        document.getElementById('appointment_id-error').classList.remove('visible');
+        aptSelect.classList.remove('is-invalid');
+      }
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        document.getElementById('report_file-error').textContent = 'Please select a PDF file to upload.';
+        document.getElementById('report_file-error').classList.add('visible');
+        fileInput.classList.add('is-invalid');
+        hasError = true;
+      } else {
+        const file = fileInput.files[0];
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+          document.getElementById('report_file-error').textContent = 'Only PDF files (.pdf) are allowed.';
+          document.getElementById('report_file-error').classList.add('visible');
+          fileInput.classList.add('is-invalid');
+          hasError = true;
+        } else {
+          document.getElementById('report_file-error').classList.remove('visible');
+          fileInput.classList.remove('is-invalid');
+        }
+      }
+
+      if (hasError) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Uploading PDF...';
+
+      const formData = new FormData();
+      formData.append('appointment_id', aptSelect.value);
+      formData.append('report_file', fileInput.files[0]);
+      formData.append('report_date', dateInput.value);
+      formData.append('remarks', remarksInput.value.trim());
+
+      const res = await Admin.uploadReport(formData);
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Upload &amp; Publish Report';
+
+      if (res.ok) {
+        alertBanner.className = 'glass-alert glass-alert-success';
+        alertBanner.innerHTML = '<strong>Success!</strong> Soil report PDF was uploaded and published. The farmer can now access it securely.';
+        alertBanner.style.display = 'flex';
+        form.reset();
+        dateInput.value = today;
+        loadReportsTable();
+      } else if (res.offline) {
+        alertBanner.className = 'glass-alert glass-alert-offline';
+        alertBanner.innerHTML = `<strong>Backend Offline:</strong> ${Validation.escapeHtml(res.error)}`;
+        alertBanner.style.display = 'flex';
+      } else {
+        alertBanner.className = 'glass-alert glass-alert-error';
+        alertBanner.innerHTML = `<strong>Upload Failed:</strong> ${Validation.escapeHtml(res.error || 'Could not upload PDF file.')}`;
+        alertBanner.style.display = 'flex';
+      }
+    });
+
+    loadAppointmentsForDropdown();
+    loadReportsTable();
+  </script>
+</body>
+</html>
+

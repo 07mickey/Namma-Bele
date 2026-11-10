@@ -10,7 +10,12 @@ def create_app(test_config=None):
     """
     app = Flask(__name__, instance_relative_config=True)
 
-    demo_active = os.environ.get("DEMO_MODE") in ("1", "true", "True")
+    demo_env = os.environ.get("DEMO_MODE")
+    if demo_env is not None:
+        demo_active = demo_env in ("1", "true", "True")
+    else:
+        # Default to DEMO_MODE=True when not in production for seamless local evaluation
+        demo_active = (os.environ.get("FLASK_ENV") != "production")
     default_db = os.path.join(app.instance_path, "demo_soil_testing.db") if demo_active else os.path.join(app.instance_path, "soil_testing.db")
     default_reports = os.path.join(app.instance_path, "demo_reports") if demo_active else os.path.join(app.instance_path, "reports")
 
@@ -40,9 +45,17 @@ def create_app(test_config=None):
     from app import db
     db.init_app(app)
 
-    # Register CSRF protection before_request hook
-    from app.auth import verify_csrf_token, auth_bp, error_response
+    # Register CSRF protection before_request hook and template context processor
+    from app.auth import verify_csrf_token, auth_bp, error_response, generate_csrf_token
     app.before_request(verify_csrf_token)
+
+    @app.context_processor
+    def inject_csrf_token():
+        from app.auth import get_current_user
+        return {
+            "csrf_token": generate_csrf_token,
+            "current_user": get_current_user(),
+        }
 
     # Register authentication blueprint
     app.register_blueprint(auth_bp)
@@ -95,6 +108,10 @@ def create_app(test_config=None):
     # Register frontend views blueprint
     from app.views import views_bp
     app.register_blueprint(views_bp)
+
+    # Register soilfrontend compatibility blueprint
+    from app.compatibility_bp import compat_bp
+    app.register_blueprint(compat_bp)
 
     # Register error handler for oversized requests (MAX_CONTENT_LENGTH)
     @app.errorhandler(413)

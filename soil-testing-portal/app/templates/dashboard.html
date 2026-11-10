@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Dashboard — NAMMA BELE</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.65);
+    }
+
+    .welcome-text h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--color-text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .welcome-meta {
+      color: var(--color-text-muted);
+      font-size: 0.94rem;
+      margin-top: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-card {
+      padding: 1.75rem;
+      margin-bottom: 2.5rem;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(246, 250, 247, 0.82) 100%);
+    }
+
+    .status-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(110, 140, 120, 0.15);
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-text-subtle);
+    }
+
+    .detail-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text-main);
+      margin-top: 0.15rem;
+    }
+
+    .status-explanation {
+      margin-top: 1.15rem;
+      padding: 0.9rem 1.15rem;
+      border-radius: var(--radius-md);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .action-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2rem 1.75rem;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .action-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .action-icon-green {
+      background: var(--color-primary-green-light);
+      color: var(--color-primary-green);
+      border: 1px solid var(--color-green-border);
+    }
+
+    .action-icon-brown {
+      background: var(--color-earth-brown-light);
+      color: var(--color-earth-brown);
+      border: 1px solid var(--color-soil-border);
+    }
+
+    .action-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      margin-bottom: 0.5rem;
+    }
+
+    .action-desc {
+      color: var(--color-text-muted);
+      font-size: 0.94rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Glass Navigation -->
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">
+        <span class="nav-brand-badge">
+          <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="NAMMA BELE Logo" width="42" height="42">
+        </span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">NAMMA BELE</span>
+          <span class="nav-brand-subtitle">Soil Testing &amp; Agricultural Support</span>
+        </div>
+      </a>
+      <ul class="nav-links" id="main-nav-links">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/farmer" class="nav-link active">Dashboard</a></li>
+        <li><a href="/book-appointment" class="nav-link">Book Test</a></li>
+        <li><a href="/appointments" class="nav-link">Appointments</a></li>
+        <li><a href="/reports" class="nav-link">My Reports</a></li>
+        <li><a href="/farmer/tracking" class="nav-link">Tracking</a></li>
+        <li><a href="/farmer/plots" class="nav-link">Plots</a></li>
+        <li><button type="button" onclick="Auth.logout()" class="btn btn-secondary logout-btn" style="padding: 0.35rem 0.85rem; font-size: 0.85rem; min-height: 36px;">Sign Out</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-wrapper">
+    
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <div class="welcome-text">
+        <h1>Welcome, <span id="farmer-name">Farmer</span>!</h1>
+        <p class="welcome-meta" id="farmer-meta">Registered Mobile: Loading...</p>
+      </div>
+      <div>
+        <a href="book-appointment.html" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Book Soil Test
+        </a>
+      </div>
+    </div>
+
+    <!-- Active Appointment Status Card -->
+    <div id="latest-status" class="glass-card status-card">
+      <div class="status-card-header">
+        <div class="status-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary-green);">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          Latest Appointment Status
+        </div>
+        <div id="status-badge-container">
+          <span class="status-badge status-pending">Checking Status...</span>
+        </div>
+      </div>
+      
+      <div id="status-card-content">
+        <p style="color: var(--color-text-muted);">Fetching your latest appointment records...</p>
+      </div>
+    </div>
+
+    <!-- Quick Action Cards Grid -->
+    <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--color-text-main); letter-spacing: -0.015em;">
+      Farmer Portal Services &bull; Appointments &amp; Reports
+    </h2>
+    <div class="dashboard-grid">
+      
+      <!-- Card 1: Book Soil Test -->
+      <a href="/book-appointment" class="glass-card action-card glass-card-hover">
+        <div>
+          <div class="action-icon action-icon-green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </div>
+          <h3 class="action-title">Book Soil Test</h3>
+          <p class="action-desc">
+            Request an appointment for your field. Choose your preferred date, village location, and soil testing requirements.
+          </p>
+        </div>
+        <span class="btn btn-primary" style="align-self: flex-start;">Request Appointment &rarr;</span>
+      </a>
+
+      <!-- Card 2: My Appointments -->
+      <a href="/appointments" class="glass-card action-card glass-card-hover glass-card-earth">
+        <div>
+          <div class="action-icon action-icon-brown">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <h3 class="action-title">My Appointments</h3>
+          <p class="action-desc">
+            Track all requested soil tests, view coordinator approval status, and check scheduled sample collection dates.
+          </p>
+        </div>
+        <span class="btn btn-secondary" style="align-self: flex-start;">View Appointments &rarr;</span>
+      </a>
+
+      <!-- Card 3: My Reports -->
+      <a href="/reports" class="glass-card action-card glass-card-hover">
+        <div>
+          <div class="action-icon action-icon-green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <h3 class="action-title">My Reports</h3>
+          <p class="action-desc">
+            Securely access and download verified laboratory PDF soil health test reports for your agricultural land.
+          </p>
+        </div>
+        <span class="btn btn-glass" style="align-self: flex-start; border: 1.5px solid var(--color-primary-green); color: var(--color-primary-green);">Access Reports &rarr;</span>
+      </a>
+
+      <!-- Card 4: Live Sample Tracking -->
+      <a href="/farmer/tracking" class="glass-card action-card glass-card-hover glass-card-earth">
+        <div>
+          <div class="action-icon action-icon-brown">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <h3 class="action-title">Live Sample Tracking</h3>
+          <p class="action-desc">
+            Follow the 6-stage physical chain-of-custody tracking from field collection to lab testing and final PDF report generation.
+          </p>
+        </div>
+        <span class="btn btn-secondary" style="align-self: flex-start;">Track Soil Sample &rarr;</span>
+      </a>
+
+      <!-- Card 5: Farm Plot Registry -->
+      <a href="/farmer/plots" class="glass-card action-card glass-card-hover">
+        <div>
+          <div class="action-icon action-icon-green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+              <line x1="8" y1="2" x2="8" y2="18"></line>
+              <line x1="16" y1="6" x2="16" y2="22"></line>
+            </svg>
+          </div>
+          <h3 class="action-title">Farm Plot Registry</h3>
+          <p class="action-desc">
+            Manage your land parcel acreage, survey numbers, soil types, and GPS coordinates for multi-plot farms.
+          </p>
+        </div>
+        <span class="btn btn-glass" style="align-self: flex-start; border: 1.5px solid var(--color-primary-green); color: var(--color-primary-green);">View Plots &rarr;</span>
+      </a>
+
+      <!-- Card 6: Crop History & Yields -->
+      <a href="/farmer/crop-history" class="glass-card action-card glass-card-hover glass-card-earth">
+        <div>
+          <div class="action-icon action-icon-brown">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+          </div>
+          <h3 class="action-title">Crop History</h3>
+          <p class="action-desc">
+            Review past seasonal harvests, crop yields, fertilizer applications, and historical soil performance.
+          </p>
+        </div>
+        <span class="btn btn-secondary" style="align-self: flex-start;">View History &rarr;</span>
+      </a>
+
+    </div>
+
+  </main>
+
+  <!-- Glass Footer -->
+  <footer class="glass-footer">
+    <p>NAMMA BELE &bull; Soil Testing &amp; Farmer Agricultural Service Platform</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script>
+    {% if session.get('user_id') %}
+    if (typeof Auth !== 'undefined' && !Auth.isLoggedIn()) {
+      Auth.saveSession('flask-session', {
+        id: {{ session.get('user_id') }},
+        role: "{{ session.get('role', 'farmer') }}",
+        phone: "{{ session.get('phone', '') }}",
+        name: "{{ session.get('name', 'Farmer') }}"
+      });
+    }
+    {% endif %}
+    // Enforce authentication
+    Auth.requireAuth();
+
+    // Populate user profile info safely
+    const farmer = Auth.getFarmer();
+    const nameEl = document.getElementById('farmer-name');
+    const metaEl = document.getElementById('farmer-meta');
+
+    if (farmer) {
+      if (farmer.name) nameEl.textContent = farmer.name;
+      if (farmer.phone) metaEl.textContent = `Registered Mobile: ${farmer.phone}`;
+    }
+
+    // Load Latest Appointment Status with defensive sorting & HTML escaping
+    async function loadLatestStatus() {
+      const badgeContainer = document.getElementById('status-badge-container');
+      const contentEl = document.getElementById('status-card-content');
+
+      const result = await API.getFarmerAppointments();
+
+      if (result.offline) {
+        badgeContainer.innerHTML = `<span class="status-badge" style="background: rgba(245, 158, 11, 0.15); color: #92400e;">Offline Notice</span>`;
+        contentEl.innerHTML = `
+          <div class="glass-alert glass-alert-offline" style="margin-bottom: 0;">
+            <div>
+              <strong>Backend Offline:</strong> ${Validation.escapeHtml(result.error)}<br>
+              <span style="font-size: 0.85rem;">[Notice: Waiting for Person 1's Flask API to serve appointment records.]</span>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (!result.ok) {
+        badgeContainer.innerHTML = `<span class="status-badge status-rejected">Error</span>`;
+        contentEl.innerHTML = `<p style="color: var(--status-rejected-text);">${Validation.escapeHtml(result.error || 'Could not load appointment details.')}</p>`;
+        return;
+      }
+
+      const appointments = result.data?.appointments || [];
+
+      if (appointments.length === 0) {
+        badgeContainer.innerHTML = `<span class="status-badge" style="background: rgba(110, 140, 120, 0.15); color: var(--color-text-muted);">No Active Request</span>`;
+        contentEl.innerHTML = `
+          <p style="color: var(--color-text-muted); margin-bottom: 1.15rem;">
+            You have not requested any soil-testing appointments yet.
+          </p>
+          <a href="book-appointment.html" class="btn btn-primary" style="font-size: 0.92rem;">
+            Request Your First Soil Test
+          </a>
+        `;
+        return;
+      }
+
+      // Defensive client-side sort: newest appointment first
+      const sorted = [...appointments].sort((a, b) => (b.id || 0) - (a.id || 0));
+      const latest = sorted[0];
+      const status = (latest.status || 'Pending').trim();
+      let statusClass = 'status-pending';
+      let explanation = 'Your appointment request has been submitted and is currently being reviewed by the agricultural coordinator.';
+
+      if (status.toLowerCase() === 'approved') {
+        statusClass = 'status-approved';
+        explanation = 'Your appointment has been approved! The field coordinator will visit your land on the scheduled date for sample collection.';
+      } else if (status.toLowerCase() === 'completed') {
+        statusClass = 'status-completed';
+        explanation = 'Soil laboratory analysis is complete! Your official PDF report has been generated and is available for download.';
+      } else if (status.toLowerCase() === 'rejected') {
+        statusClass = 'status-rejected';
+        explanation = 'Your request could not be accepted for the selected date. Please review the notes or book an alternate date.';
+      }
+
+      badgeContainer.innerHTML = `<span class="status-badge ${statusClass}">${Validation.escapeHtml(status)}</span>`;
+
+      contentEl.innerHTML = `
+        <div class="status-details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Land / Field Details</span>
+            <span class="detail-value">${Validation.escapeHtml(latest.land_details || 'Field Details Provided')}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Field Address</span>
+            <span class="detail-value">${Validation.escapeHtml(latest.address || 'Village Address Provided')}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Preferred Date &amp; Slot</span>
+            <span class="detail-value">${Validation.escapeHtml(latest.preferred_date || 'N/A')} (${Validation.escapeHtml(latest.preferred_time || 'General')})</span>
+          </div>
+        </div>
+
+        <div class="status-explanation">
+          <strong>Status Note:</strong> ${explanation}
+          ${status.toLowerCase() === 'completed' ? '<div style="margin-top: 0.65rem;"><a href="reports.html" class="btn btn-primary" style="font-size: 0.86rem; padding: 0.45rem 1.1rem; min-height: 38px;">📄 Download Official PDF Report</a></div>' : ''}
+        </div>
+      `;
+    }
+
+    loadLatestStatus();
+  </script>
+</body>
+</html>

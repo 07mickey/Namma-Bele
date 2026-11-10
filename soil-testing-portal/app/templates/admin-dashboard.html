@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — NAMMA BELE</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    .admin-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.25rem;
+    }
+
+    .metric-card {
+      padding: 1.5rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--color-text-main);
+      margin: 0.35rem 0 0.15rem;
+      line-height: 1;
+    }
+
+    .metric-sub {
+      font-size: 0.84rem;
+      color: var(--color-text-muted);
+    }
+
+    .admin-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .recent-table-wrap {
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    table.admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.92rem;
+    }
+
+    table.admin-table th {
+      padding: 0.75rem 1rem;
+      font-weight: 700;
+      color: var(--color-text-subtle);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid rgba(110, 140, 120, 0.2);
+    }
+
+    table.admin-table td {
+      padding: 0.95rem 1rem;
+      border-bottom: 1px solid rgba(110, 140, 120, 0.1);
+      color: var(--color-text-main);
+    }
+
+    table.admin-table tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Glass Navigation (Admin Style) -->
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <a href="/admin" class="nav-brand">
+        <span class="nav-brand-badge">
+          <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="NAMMA BELE Logo" width="42" height="42">
+        </span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">NAMMA BELE Admin</span>
+          <span class="nav-brand-subtitle">ನಮ್ಮ ಬೆಳೆ &bull; Management Console</span>
+        </div>
+      </a>
+
+      <!-- Mobile Hamburger Button -->
+      <button class="nav-toggle" aria-label="Toggle navigation menu" id="admin-nav-toggle" type="button">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links" id="admin-nav-links">
+        <li><a href="/admin" class="nav-link active">Overview</a></li>
+        <li><a href="/admin-appointments" class="nav-link">Appointments</a></li>
+        <li><a href="/admin-reports" class="nav-link">Upload Reports</a></li>
+        <li><a href="/admin-farmers" class="nav-link">Farmers</a></li>
+        <li><a href="/admin/tracking" class="nav-link">Tracking</a></li>
+        <li><a href="/admin/dispatch" class="nav-link">Dispatch</a></li>
+        <li><button type="button" onclick="Admin.adminLogout()" class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.85rem; min-height: 36px;">Sign Out</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-wrapper">
+    
+    <div class="admin-hero" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+      <div>
+        <h1 class="page-title">
+          Admin Dashboard &bull; Administrator Dashboard
+        </h1>
+        <p class="page-subtitle">Overview of appointments, field collections, and soil test reports</p>
+      </div>
+      <div>
+        <a href="/admin-reports" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Upload Soil Report PDF
+        </a>
+      </div>
+    </div>
+
+    <!-- Alert Area -->
+    <div id="admin-alert" class="glass-alert" style="display: none;"></div>
+
+    <!-- Admin Search Container -->
+    <div id="admin-search-container" class="admin-search-container glass-card" style="margin-bottom: 1.75rem; padding: 1.25rem 1.5rem;">
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <input 
+          type="text" 
+          id="admin-search-input" 
+          class="form-control" 
+          aria-label="Search appointments on currently loaded page"
+          placeholder="Search by ID, farmer name, phone, land, or address..."
+          autocomplete="off"
+          style="flex: 1;"
+        >
+        <button type="button" id="btn-clear-search" class="btn btn-secondary btn-sm" aria-label="Clear search input" style="min-height: 38px;">Clear</button>
+      </div>
+      <div id="admin-search-scope-text" style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.4rem;">
+        Search filters the appointments loaded on the current page.
+      </div>
+    </div>
+
+    <!-- Metric Counters Grid -->
+    <div class="admin-metrics-grid">
+      <div class="glass-card metric-card">
+        <span class="metric-label">Pending Requests</span>
+        <span class="metric-value" id="kpi-pending" style="color: #b45309;">-</span>
+        <span class="metric-sub">Awaiting coordinator review</span>
+      </div>
+
+      <div class="glass-card metric-card">
+        <span class="metric-label">Approved &amp; Scheduled</span>
+        <span class="metric-value" id="kpi-approved" style="color: #0369a1;">-</span>
+        <span class="metric-sub">Field visits in progress</span>
+      </div>
+
+      <div class="glass-card metric-card">
+        <span class="metric-label">Tests Completed</span>
+        <span class="metric-value" id="kpi-completed" style="color: #15803d;">-</span>
+        <span class="metric-sub">Lab analysis finalized</span>
+      </div>
+
+      <div class="glass-card metric-card glass-card-earth">
+        <span class="metric-label">Registered Farmers</span>
+        <span class="metric-value" id="kpi-farmers" style="color: var(--color-earth-brown);">-</span>
+        <span class="metric-sub">Community member accounts</span>
+      </div>
+    </div>
+
+    <!-- Quick Action Cards Grid -->
+    <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--color-text-main);">
+      Coordinator Operations
+    </h2>
+    <div class="admin-actions-grid">
+      
+      <a href="admin-appointments.html" class="glass-card glass-card-hover" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-text-main); margin-bottom: 0.5rem;">
+            Manage Appointments
+          </h3>
+          <p style="color: var(--color-text-muted); font-size: 0.94rem; margin-bottom: 1.5rem;">
+            Review incoming farmer requests. Approve scheduled visits, record field sample collection, and update testing status.
+          </p>
+        </div>
+        <span class="btn btn-primary" style="align-self: flex-start;">Open Appointments Table &rarr;</span>
+      </a>
+
+      <a href="admin-reports.html" class="glass-card glass-card-hover glass-card-earth" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-text-main); margin-bottom: 0.5rem;">
+            Upload PDF Reports
+          </h3>
+          <p style="color: var(--color-text-muted); font-size: 0.94rem; margin-bottom: 1.5rem;">
+            Upload official laboratory PDF test certificates for completed soil tests so farmers can view and download them securely.
+          </p>
+        </div>
+        <span class="btn btn-secondary" style="align-self: flex-start;">Upload &amp; Manage Reports &rarr;</span>
+      </a>
+
+      <a href="admin-farmers.html" class="glass-card glass-card-hover" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-text-main); margin-bottom: 0.5rem;">
+            Farmer Directory
+          </h3>
+          <p style="color: var(--color-text-muted); font-size: 0.94rem; margin-bottom: 1.5rem;">
+            Browse registered community farmers, view contact phone numbers, and inspect their soil health history.
+          </p>
+        </div>
+        <span class="btn btn-glass" style="align-self: flex-start; border: 1.5px solid var(--color-primary-green); color: var(--color-primary-green);">View Farmers Directory &rarr;</span>
+      </a>
+
+    </div>
+
+    <!-- Recent Appointments Section -->
+    <div class="glass-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--color-text-main);">
+          Recent Appointment Requests
+        </h2>
+        <a href="admin-appointments.html" style="color: var(--color-primary-green); font-weight: 700; text-decoration: none; font-size: 0.9rem;">
+          View All &rarr;
+        </a>
+      </div>
+
+      <div class="recent-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Plot / Land Details</th>
+              <th>Location</th>
+              <th>Preferred Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recent-tbody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">
+                Loading appointment records...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Glass Footer -->
+  <footer class="glass-footer">
+    <p>NAMMA BELE &bull; Soil Testing &amp; Agricultural Administration Console</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+  <script>
+    {% if session.get('user_id') %}
+    if (typeof Admin !== 'undefined' && !Admin.isAdminLoggedIn()) {
+      Admin.saveAdminSession('flask-session', {
+        id: {{ session.get('user_id') }},
+        role: "{{ session.get('role', 'admin') }}",
+        phone: "{{ session.get('phone', '') }}",
+        name: "{{ session.get('name', 'Admin') }}"
+      });
+    }
+    {% endif %}
+    Admin.requireAdminAuth();
+
+    async function loadDashboardData() {
+      const alertBanner = document.getElementById('admin-alert');
+      const tbody = document.getElementById('recent-tbody');
+
+      const [aptRes, farmersRes] = await Promise.all([
+        Admin.getAppointments(),
+        Admin.getFarmers()
+      ]);
+
+      if (aptRes.offline) {
+        alertBanner.className = 'glass-alert glass-alert-offline';
+        alertBanner.innerHTML = `<strong>Backend Offline:</strong> ${Validation.escapeHtml(aptRes.error)}<br><span style="font-size:0.85rem;">[Notice: Waiting for Person 1's Flask backend to start on http://127.0.0.1:5000.]</span>`;
+        alertBanner.style.display = 'flex';
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">Server offline. Live appointments will load once Person 1's backend starts.</td></tr>`;
+        return;
+      }
+
+      if (!aptRes.ok) {
+        alertBanner.className = 'glass-alert glass-alert-error';
+        alertBanner.innerHTML = `<strong>Error:</strong> ${Validation.escapeHtml(aptRes.error || 'Failed to load dashboard data.')}`;
+        alertBanner.style.display = 'flex';
+        tbody.innerHTML = '';
+        return;
+      }
+
+      const appointments = aptRes.data?.appointments || [];
+      const farmers = farmersRes.data?.farmers || [];
+
+      // Calculate KPI metrics
+      let pendingCount = 0;
+      let approvedCount = 0;
+      let completedCount = 0;
+
+      appointments.forEach(a => {
+        const s = (a.status || '').toLowerCase().trim();
+        if (s === 'pending') pendingCount++;
+        else if (s === 'approved') approvedCount++;
+        else if (s === 'completed') completedCount++;
+      });
+
+      document.getElementById('kpi-pending').textContent = pendingCount;
+      document.getElementById('kpi-approved').textContent = approvedCount;
+      document.getElementById('kpi-completed').textContent = completedCount;
+      document.getElementById('kpi-farmers').textContent = farmers.length || appointments.length;
+
+      // Render recent 5 appointments
+      if (appointments.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">No appointment requests received yet.</td></tr>`;
+        return;
+      }
+
+      const recent = [...appointments].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 5);
+
+      function getStatusClass(status) {
+        const s = (status || '').toLowerCase().trim();
+        if (s === 'approved') return 'status-approved';
+        if (s === 'completed') return 'status-completed';
+        if (s === 'rejected') return 'status-rejected';
+        return 'status-pending';
+      }
+
+      tbody.innerHTML = recent.map(apt => {
+        const status = apt.status || 'Pending';
+        const statusClass = getStatusClass(status);
+        const isPending = status.toLowerCase() === 'pending';
+
+        return `
+          <tr>
+            <td style="font-weight: 700;">#${Validation.escapeHtml(apt.id || '')}</td>
+            <td style="font-weight: 600;">${Validation.escapeHtml(apt.land_details || 'Field')}</td>
+            <td>${Validation.escapeHtml(apt.address || 'Location')}</td>
+            <td>${Validation.escapeHtml(apt.preferred_date || 'N/A')} (${Validation.escapeHtml(apt.preferred_time || '')})</td>
+            <td><span class="status-badge ${statusClass}">${Validation.escapeHtml(status)}</span></td>
+            <td>
+              <a href="admin-appointments.html" class="btn btn-glass" style="padding: 0.3rem 0.75rem; font-size: 0.82rem; min-height: 32px;">
+                Manage &rarr;
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    loadDashboardData();
+
+    // Mobile nav toggle
+    const adminToggle = document.getElementById('admin-nav-toggle');
+    const adminLinks = document.getElementById('admin-nav-links');
+    if (adminToggle && adminLinks) {
+      adminToggle.addEventListener('click', () => {
+        adminLinks.classList.toggle('mobile-open');
+      });
+    }
+  </script>
+</body>
+</html>
+

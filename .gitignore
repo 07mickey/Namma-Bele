@@ -1,3 +1,7 @@
+# ==============================================================================
+# NAMMA BELE — Unified Monorepo .gitignore
+# ==============================================================================
+
 # Databases & Local Instances (STRICT)
 *.db
 *.sqlite
@@ -7,31 +11,67 @@ soil-testing-portal/instance/
 backups/
 *.tar.gz
 
-# Environment Secrets
+# Environment Secrets & Local Configurations
 .env
 .env.*
 !.env.example
+*.env
+.secrets
+secrets.json
 
-# Python Caches & Environments
+# Python Caches & Compiled Bytecode
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Python Virtual Environments
 venv/
 .venv/
 env/
+ENV/
+env.bak/
+venv.bak/
 
-# OS & Editor Metadata
+# Application Runtime Uploads & Generated Reports
+# (Scoped to portal runtime so documentation PDFs in manya/ or sidhan/ are preserved)
+uploads/
+reports/
+storage/
+private/
+soil-testing-portal/uploads/
+soil-testing-portal/reports/
+soil-testing-portal/storage/
+soil-testing-portal/private/
+soil-testing-portal/*.pdf
+soil-testing-portal/**/*.pdf
+!manya/*.pdf
+!sidhan/*.pdf
+
+# Local Logs & Runtime Artefacts
+*.log
+
+# Operating System & IDE Files
 .DS_Store
 Thumbs.db
+.idea/
 .vscode/
 *.swp
+*.swo
 *~
 
-# Temporary test outputs
+# Temporary Test & Visual Outputs
 test_output/
 screens/
 temp/
 tmp/
+
+# Standalone Prototype Repositories (Untouched)
+soilfrontend/
+sidhan/documentation/
+sidhan/frontend/
+
+

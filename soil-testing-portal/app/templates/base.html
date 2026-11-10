@@ -3,161 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}NAMMA BELE{% endblock %} — Soil Testing &amp; Farmer Services</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+  <title>{% block title %}NAMMA BELE{% endblock %} — Soil Testing &amp; Operations</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo.svg') }}">
-  <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='img/favicon.png') }}">
-  <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+  <style>
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: var(--color-primary-green-light);
+      color: var(--color-primary-green);
+      border: 1px solid var(--color-green-border);
+    }
+    .portal-brand-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .portal-brand-logo {
+      height: 48px;
+      width: auto;
+    }
+  </style>
 </head>
 <body>
-  <!-- Top Glass Navigation Bar (MANYA Glassmorphic Layout) -->
-  <header class="glass-nav navbar">
+  <nav class="glass-nav">
     <div class="nav-container">
-      <a href="/" class="nav-brand brand" aria-label="NAMMA BELE Home">
+      <a href="/" class="nav-brand">
         <span class="nav-brand-badge">
-          <img src="{{ url_for('static', filename='img/namma_bele_emblem.png') }}" alt="NAMMA BELE Emblem" width="42" height="42" class="brand-logo-img">
+          <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="NAMMA BELE" width="38" height="38">
         </span>
-        <div class="nav-brand-text brand-text-block">
-          <span class="nav-brand-title brand-name">NAMMA BELE</span>
-          <span class="nav-brand-subtitle brand-subtext">ನಮ್ಮ ಬೆಳೆ &bull; Soil Testing Portal</span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">NAMMA BELE</span>
+          <span class="nav-brand-subtitle">ನಮ್ಮ ಬೆಳೆ &bull; Soil Testing Portal</span>
         </div>
       </a>
-      
-      <nav class="nav-links" id="main-nav">
-        <a href="/" class="nav-link nav-item">Home</a>
-        <a href="/soil-guide" class="nav-link nav-item">Soil Guide</a>
-        <a href="/contact" class="nav-link nav-item">Contact &amp; Support</a>
-        <a href="/farmer" id="nav-dashboard-link" class="nav-link nav-item" style="display: none;">Portal</a>
-        <span id="nav-guest-links" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-          <a href="/login" class="nav-link nav-item">Sign In</a>
-          <a href="/register" class="btn btn-primary btn-sm">Register as Farmer</a>
-        </span>
-        <div id="nav-auth-user" class="nav-user" style="display: none; align-items: center; gap: 0.65rem;">
-          <span id="nav-user-role" class="role-badge"></span>
-          <span id="nav-user-name" style="font-weight: 600; font-size: 0.92rem;"></span>
-          <button id="btn-logout" class="btn btn-secondary btn-sm" type="button" style="padding: 0.35rem 0.85rem; font-size: 0.85rem; min-height: 36px;">Sign Out</button>
-        </div>
-      </nav>
+
+      <!-- Mobile Hamburger Button -->
+      <button class="nav-toggle" aria-label="Toggle navigation menu" id="nav-toggle-btn" type="button">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links" id="base-nav-links">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/soil-guide" class="nav-link">Soil Guide</a></li>
+        {% if current_user %}
+          {% if current_user.role == 'farmer' %}
+            <li><a href="/farmer" class="nav-link">Dashboard</a></li>
+            <li><a href="/book-appointment" class="nav-link">Book Test</a></li>
+            <li><a href="/farmer/tracking" class="nav-link">Tracking</a></li>
+            <li><a href="/reports" class="nav-link">Reports</a></li>
+          {% elif current_user.role == 'admin' %}
+            <li><a href="/admin" class="nav-link">Admin Console</a></li>
+            <li><a href="/admin/tracking" class="nav-link">Tracking</a></li>
+            <li><a href="/admin/dispatch" class="nav-link">Dispatch</a></li>
+            <li><a href="/admin-farmers" class="nav-link">Farmers</a></li>
+          {% elif current_user.role == 'operator' %}
+            <li><a href="/operator" class="nav-link">Operator Desk</a></li>
+            <li><a href="/admin/tracking" class="nav-link">Tracking</a></li>
+          {% elif current_user.role == 'field_worker' %}
+            <li><a href="/field-worker" class="nav-link">Field Visits</a></li>
+          {% elif current_user.role in ('lab_analyst', 'lab_supervisor') %}
+            <li><a href="/lab" class="nav-link">Lab Workspace</a></li>
+          {% elif current_user.role == 'advisor' %}
+            <li><a href="/advisor" class="nav-link">Advisor Workspace</a></li>
+          {% endif %}
+          <li>
+            <button type="button" onclick="Auth.logout()" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.85rem; font-size: 0.82rem; min-height: 34px;">
+              Sign Out
+            </button>
+          </li>
+        {% else %}
+          <li><a href="/contact" class="nav-link">Contact</a></li>
+          <li><a href="/login" class="nav-link">Sign In</a></li>
+          <li><a href="/register" class="btn btn-primary btn-sm" style="padding: 0.4rem 1rem; font-size: 0.85rem; min-height: 36px;">Register</a></li>
+        {% endif %}
+      </ul>
     </div>
-  </header>
+  </nav>
 
-  <!-- Global Alert / Feedback Area -->
-  <div class="page-wrapper" style="padding-bottom: 0; padding-top: 1.25rem;">
-    <div id="global-alert" class="glass-alert" style="display: none;"></div>
-  </div>
-
-  <!-- Page Content in MANYA Page Wrapper -->
-  <main class="page-wrapper main-content">
+  <main class="page-wrapper">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Glass Footer (MANYA Glassmorphic Footer) -->
-  <footer class="glass-footer footer">
-    <div class="nav-container" style="justify-content: center; text-align: center; flex-direction: column; gap: 0.6rem;">
-      <div style="display: flex; align-items: center; justify-content: center; gap: 0.65rem;">
-        <img src="{{ url_for('static', filename='img/namma_bele_logo_transparent.png') }}" alt="NAMMA BELE Logo" style="height: 32px; width: auto; object-fit: contain;">
-        <span style="font-weight: 800; color: var(--namma-primary, #3c2115); font-size: 1.05rem;">NAMMA BELE &bull; ನಮ್ಮ ಬೆಳೆ</span>
+  <footer class="glass-footer">
+    <div style="max-width: 1140px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <strong>NAMMA BELE (ನಮ್ಮ ಬೆಳೆ)</strong> &bull; Community Agricultural Soil Testing &amp; Extension
       </div>
-      <p style="margin: 0; font-size: 0.88rem; color: var(--color-text-muted);">&copy; 2026 NAMMA BELE &mdash; Soil Testing &amp; Farmer Agricultural Service Platform. A Community Agricultural Initiative.</p>
+      <div>
+        <a href="/soil-guide" style="margin-right: 1rem;">Soil Guide</a>
+        <a href="/contact" style="margin-right: 1rem;">Contact Support</a>
+        <a href="/login">Portal Access</a>
+      </div>
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
   <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
   <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
   <script>
-    // Universal UI Notification Helper (XSS-safe textContent rendering)
-    window.showAlert = function(message, type = 'info', timeoutMs = 6000) {
-      const container = document.getElementById('global-alert');
-      if (!container) return;
-      let alertClass = 'glass-alert glass-alert-info';
-      if (type === 'error' || type === 'danger') alertClass = 'glass-alert glass-alert-error';
-      else if (type === 'success') alertClass = 'glass-alert glass-alert-success';
-      else if (type === 'warning' || type === 'offline') alertClass = 'glass-alert glass-alert-offline';
-      container.className = alertClass;
-      const span = document.createElement('span');
-      span.textContent = String(message || '');
-      container.replaceChildren(span);
-      container.style.display = 'flex';
-      if (timeoutMs > 0) {
-        setTimeout(() => {
-          if (container.textContent.includes(message)) {
-            container.style.display = 'none';
-          }
-        }, timeoutMs);
-      }
-    };
-
-    window.hideAlert = function() {
-      const container = document.getElementById('global-alert');
-      if (container) container.style.display = 'none';
-    };
-
-    // Shared Navbar Session Synchronizer
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const authData = await API.checkAuth();
-        const guestLinks = document.getElementById('nav-guest-links');
-        const authUser = document.getElementById('nav-auth-user');
-        const userRole = document.getElementById('nav-user-role');
-        const userName = document.getElementById('nav-user-name');
-        const logoutBtn = document.getElementById('btn-logout');
-        const dashboardLink = document.getElementById('nav-dashboard-link');
-
-        if (authData && authData.authenticated && authData.user) {
-          if (guestLinks) guestLinks.style.display = 'none';
-          if (authUser) authUser.style.display = 'flex';
-          if (dashboardLink) {
-            dashboardLink.style.display = 'inline-flex';
-            if (authData.user.role === 'admin') {
-              dashboardLink.href = '/admin';
-              dashboardLink.textContent = 'Admin Console';
-            } else if (authData.user.role === 'operator') {
-              dashboardLink.href = '/operator';
-              dashboardLink.textContent = 'Operator Desk';
-            } else if (authData.user.role === 'field_worker') {
-              dashboardLink.href = '/field-worker';
-              dashboardLink.textContent = 'Field Visits';
-            } else if (authData.user.role === 'lab_staff') {
-              dashboardLink.href = '/lab';
-              dashboardLink.textContent = 'Laboratory';
-            } else if (authData.user.role === 'advisor') {
-              dashboardLink.href = '/advisor';
-              dashboardLink.textContent = 'Expert Desk';
-            } else {
-              dashboardLink.href = '/farmer';
-              dashboardLink.textContent = 'Farmer Portal';
-            }
-          }
-          if (userRole) {
-            userRole.textContent = authData.user.role;
-            userRole.className = `role-badge ${authData.user.role}`;
-          }
-          if (userName) {
-            userName.textContent = `${authData.user.name} (${authData.user.phone})`;
-          }
-          if (logoutBtn) {
-            logoutBtn.addEventListener('click', async () => {
-              try {
-                await API.logout();
-                window.location.href = '/';
-              } catch (err) {
-                window.location.href = '/';
-              }
-            });
-          }
-        } else {
-          if (guestLinks) guestLinks.style.display = 'inline-flex';
-          if (authUser) authUser.style.display = 'none';
-        }
-      } catch (err) {
-        // Silently treat as guest if checkAuth fails
-      }
-    });
+    // Mobile navigation drawer toggle
+    const toggleBtn = document.getElementById('nav-toggle-btn');
+    const navLinks = document.getElementById('base-nav-links');
+    if (toggleBtn && navLinks) {
+      toggleBtn.addEventListener('click', () => {
+        navLinks.classList.toggle('mobile-open');
+      });
+    }
   </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
-
-

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Appointments — NAMMA BELE</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      padding: 0.4rem;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      width: fit-content;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .filter-btn:hover {
+      color: var(--color-primary-green);
+    }
+
+    .filter-btn.active {
+      background: var(--color-white);
+      color: var(--color-primary-green);
+      box-shadow: 0 2px 8px rgba(27, 67, 50, 0.12);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table.admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.92rem;
+    }
+
+    table.admin-table th {
+      padding: 0.85rem 1rem;
+      font-weight: 700;
+      color: var(--color-text-subtle);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid rgba(110, 140, 120, 0.2);
+    }
+
+    table.admin-table td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(110, 140, 120, 0.1);
+      color: var(--color-text-main);
+      vertical-align: middle;
+    }
+
+    table.admin-table tr:hover td {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .action-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Glass Navigation -->
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <a href="/admin" class="nav-brand">
+        <span class="nav-brand-badge">
+          <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="NAMMA BELE Logo" width="42" height="42">
+        </span>
+        <div class="nav-brand-text">
+          <span class="nav-brand-title">NAMMA BELE Admin</span>
+          <span class="nav-brand-subtitle">Management Console</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/admin" class="nav-link">Overview</a></li>
+        <li><a href="/admin-appointments" class="nav-link active">Appointments</a></li>
+        <li><a href="/admin-reports" class="nav-link">Upload Reports</a></li>
+        <li><a href="/admin-farmers" class="nav-link">Farmers</a></li>
+        <li><a href="/admin/tracking" class="nav-link">Tracking</a></li>
+        <li><a href="/admin/dispatch" class="nav-link">Dispatch</a></li>
+        <li><button type="button" onclick="Admin.adminLogout()" class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.85rem; min-height: 36px;">Sign Out</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="page-wrapper">
+    
+    <div class="page-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 class="page-title">
+          Appointment Management
+        </h1>
+        <p class="page-subtitle">Review, approve, or update soil-testing appointment statuses</p>
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <input 
+          type="text" 
+          id="search-input" 
+          class="form-control" 
+          placeholder="Search land or location..." 
+          style="min-height: 40px; font-size: 0.9rem; width: 220px;"
+        >
+      </div>
+    </div>
+
+    <!-- Alert Banner -->
+    <div id="admin-alert" class="glass-alert" style="display: none;"></div>
+
+    <!-- Status Filter Bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="pending">Pending</button>
+      <button class="filter-btn" data-filter="approved">Approved</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+      <button class="filter-btn" data-filter="rejected">Rejected</button>
+    </div>
+
+    <!-- Appointments Table Card -->
+    <div class="glass-card">
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Plot / Land Details</th>
+              <th>Farm Location</th>
+              <th>Date &amp; Slot</th>
+              <th>Status</th>
+              <th>Coordinator Actions</th>
+            </tr>
+          </thead>
+          <tbody id="appointments-tbody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">
+                Loading appointment records...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Glass Footer -->
+  <footer class="glass-footer">
+    <p>NAMMA BELE &bull; Soil Testing &amp; Agricultural Administration Console</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+  <script>
+    {% if session.get('user_id') %}
+    if (typeof Admin !== 'undefined' && !Admin.isAdminLoggedIn()) {
+      Admin.saveAdminSession('flask-session', {
+        id: {{ session.get('user_id') }},
+        role: "{{ session.get('role', 'admin') }}",
+        phone: "{{ session.get('phone', '') }}",
+        name: "{{ session.get('name', 'Admin') }}"
+      });
+    }
+    {% endif %}
+    Admin.requireAdminAuth();
+
+    const tbody = document.getElementById('appointments-tbody');
+    const alertBanner = document.getElementById('admin-alert');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const searchInput = document.getElementById('search-input');
+
+    let allAppointments = [];
+    let currentFilter = 'all';
+
+    function getStatusClass(status) {
+      const s = (status || '').toLowerCase().trim();
+      if (s === 'approved') return 'status-approved';
+      if (s === 'completed') return 'status-completed';
+      if (s === 'rejected') return 'status-rejected';
+      return 'status-pending';
+    }
+
+    function renderTable(list) {
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2.5rem;">
+              No appointments found matching current filter.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = list.map(apt => {
+        const status = apt.status || 'Pending';
+        const statusClass = getStatusClass(status);
+        const sLower = status.toLowerCase();
+        const safeId = Validation.escapeHtml(apt.id || '');
+
+        let actionHtml = '';
+        if (sLower === 'pending') {
+          actionHtml = `
+            <div class="action-btn-group">
+              <button onclick="handleStatusUpdate('${safeId}', 'Approved')" class="btn btn-primary" style="padding: 0.35rem 0.85rem; font-size: 0.82rem; min-height: 32px;">
+                Approve
+              </button>
+              <button onclick="handleStatusUpdate('${safeId}', 'Rejected')" class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.82rem; min-height: 32px; color: var(--status-rejected-text); border-color: rgba(225, 29, 72, 0.3);">
+                Reject
+              </button>
+            </div>
+          `;
+        } else if (sLower === 'approved') {
+          actionHtml = `
+            <div class="action-btn-group">
+              <button onclick="handleStatusUpdate('${safeId}', 'Completed')" class="btn btn-primary" style="padding: 0.35rem 0.85rem; font-size: 0.82rem; min-height: 32px; background: linear-gradient(135deg, #15803d 0%, #166534 100%);">
+                Mark Completed
+              </button>
+              <a href="admin-reports.html?appointment_id=${encodeURIComponent(apt.id)}" class="btn btn-glass" style="padding: 0.35rem 0.85rem; font-size: 0.82rem; min-height: 32px;">
+                Upload Report
+              </a>
+            </div>
+          `;
+        } else if (sLower === 'completed') {
+          actionHtml = `
+            <div class="action-btn-group">
+              <span style="font-size: 0.82rem; color: var(--color-primary-green); font-weight: 700;">Completed</span>
+              <a href="admin-reports.html?appointment_id=${encodeURIComponent(apt.id)}" class="btn btn-glass" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: 30px;">
+                View/Upload PDF
+              </a>
+            </div>
+          `;
+        } else {
+          actionHtml = `
+            <span style="font-size: 0.84rem; color: var(--status-rejected-text);">Rejected</span>
+          `;
+        }
+
+        return `
+          <tr>
+            <td style="font-weight: 800;">#${safeId}</td>
+            <td style="font-weight: 600;">${Validation.escapeHtml(apt.land_details || 'Field')}</td>
+            <td>${Validation.escapeHtml(apt.address || 'Location')}</td>
+            <td>${Validation.escapeHtml(apt.preferred_date || 'N/A')}<br><small style="color: var(--color-text-subtle);">${Validation.escapeHtml(apt.preferred_time || '')}</small></td>
+            <td><span class="status-badge ${statusClass}">${Validation.escapeHtml(status)}</span></td>
+            <td>${actionHtml}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function loadAppointments() {
+      const res = await Admin.getAppointments();
+
+      if (res.offline) {
+        alertBanner.className = 'glass-alert glass-alert-offline';
+        alertBanner.innerHTML = `<strong>Backend Offline:</strong> ${Validation.escapeHtml(res.error)}<br><span style="font-size:0.85rem;">[Notice: Person 1's backend server must be running on http://127.0.0.1:5000 to manage live appointments.]</span>`;
+        alertBanner.style.display = 'flex';
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">Backend server offline.</td></tr>`;
+        return;
+      }
+
+      if (!res.ok) {
+        alertBanner.className = 'glass-alert glass-alert-error';
+        alertBanner.innerHTML = `<strong>Error:</strong> ${Validation.escapeHtml(res.error || 'Failed to load appointments.')}`;
+        alertBanner.style.display = 'flex';
+        tbody.innerHTML = '';
+        return;
+      }
+
+      allAppointments = res.data?.appointments || [];
+      allAppointments.sort((a, b) => (b.id || 0) - (a.id || 0));
+      applyFilterAndSearch();
+    }
+
+    function applyFilterAndSearch() {
+      const query = (searchInput.value || '').toLowerCase().trim();
+      let filtered = allAppointments;
+
+      if (currentFilter !== 'all') {
+        filtered = filtered.filter(a => (a.status || '').toLowerCase() === currentFilter);
+      }
+
+      if (query) {
+        filtered = filtered.filter(a => 
+          (a.land_details || '').toLowerCase().includes(query) ||
+          (a.address || '').toLowerCase().includes(query) ||
+          String(a.id || '').includes(query)
+        );
+      }
+
+      renderTable(filtered);
+    }
+
+    async function handleStatusUpdate(id, newStatus) {
+      if (!confirm(`Are you sure you want to change Appointment #${id} status to "${newStatus}"?`)) {
+        return;
+      }
+
+      const res = await Admin.updateAppointmentStatus(id, newStatus);
+      if (res.ok) {
+        alertBanner.className = 'glass-alert glass-alert-success';
+        alertBanner.innerHTML = `Appointment #${id} updated to <strong>${newStatus}</strong> successfully.`;
+        alertBanner.style.display = 'flex';
+        loadAppointments();
+      } else if (res.offline) {
+        alert(`Backend Offline: ${res.error}`);
+      } else {
+        alert(`Failed to update status: ${res.error || 'Unknown error'}`);
+      }
+    }
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        applyFilterAndSearch();
+      });
+    });
+
+    searchInput.addEventListener('input', () => applyFilterAndSearch());
+
+    loadAppointments();
+  </script>
+</body>
+</html>
+

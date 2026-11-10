@@ -469,12 +469,16 @@ def login():
     # Authentication successful: establish session
     session.clear()
     session["user_id"] = user["id"]
+    session["role"] = user["role"]
+    session["name"] = user["name"]
+    session["phone"] = user["phone"]
     # Generate fresh CSRF token for the authenticated session
     session["csrf_token"] = secrets.token_hex(32)
 
     return jsonify({
         "status": "success",
         "message": "Login successful.",
+        "csrf_token": session["csrf_token"],
         "user": {
             "id": user["id"],
             "name": user["name"],
