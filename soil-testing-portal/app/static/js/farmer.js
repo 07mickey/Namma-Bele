@@ -87,17 +87,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.location.href = '/login';
       return;
     }
-    if (authData.user.role !== 'farmer') {
-      window.location.href = '/admin';
+    const userRole = (authData.user.role || '').toLowerCase();
+    if (!userRole.includes('farmer')) {
+      if (userRole.includes('admin') || userRole.includes('coordinator')) {
+        window.location.href = '/admin';
+      } else if (userRole.includes('operator')) {
+        window.location.href = '/operator';
+      } else if (userRole.includes('field')) {
+        window.location.href = '/field-worker';
+      } else if (userRole.includes('lab')) {
+        window.location.href = '/lab';
+      } else if (userRole.includes('advisor')) {
+        window.location.href = '/advisor';
+      } else {
+        window.location.href = '/login';
+      }
       return;
     }
     currentUser = authData.user;
-    if (welcomeName) {
+    if (welcomeName && currentUser.name) {
       welcomeName.textContent = currentUser.name;
     }
   } catch (err) {
-    window.location.href = '/login';
-    return;
+    console.warn('Farmer auth verification fallback:', err);
   }
 
   // 2. Set min date on preferred_date input strictly according to Asia/Kolkata timezone

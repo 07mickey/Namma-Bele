@@ -114,15 +114,16 @@ def farmer_dashboard():
     user = get_current_user()
     if not user:
         return redirect(url_for("views.login"))
-    if user["role"] == "admin":
+    role = str(user["role"] or "").lower()
+    if "admin" in role or "coordinator" in role:
         return redirect(url_for("views.admin_dashboard"))
-    elif user["role"] == "operator":
+    elif "operator" in role:
         return redirect(url_for("views.operator_dashboard"))
-    elif user["role"] == "field_worker":
+    elif "field" in role:
         return redirect(url_for("views.field_worker_dashboard"))
-    elif user["role"] == "lab_staff":
+    elif "lab" in role:
         return redirect(url_for("views.lab_dashboard"))
-    elif user["role"] == "advisor":
+    elif "advisor" in role:
         return redirect(url_for("views.advisor_dashboard"))
     return render_template("farmer.html")
 
